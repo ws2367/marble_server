@@ -81,7 +81,9 @@ class GlueApp < Sinatra::Application
     def valid?
         # Validate that the access token is properly formatted.
         # Currently only checks that it's actually a string.
-        request.env["HTTP_ACCESS_TOKEN"].is_a?(String)
+        # puts "test " + params[:auth_token].to_s
+        request.env["HTTP_ACCESS_TOKEN"].is_a?(String) or 
+        params["auth_token"].is_a?(String)
     end
 
     # curl -i -H "access_token: youhavenoprivacyandnosecrets" http://localhost:4567/protected
@@ -90,7 +92,9 @@ class GlueApp < Sinatra::Application
         # Your actual access token should be generated using one of the several great libraries
         # for this purpose and stored in a database, this is just to show how Warden should be
         # set up.
-        user = User.find_by_access_token(request.env["HTTP_ACCESS_TOKEN"])
+        token = (request.env["HTTP_ACCESS_TOKEN"] == nil) ? 
+                 params["auth_token"] : request.env["HTTP_ACCESS_TOKEN"]
+        user = User.find_by_access_token(token)
         user == nil ? fail!("Could not log in") : success!(user)
     end
   end
@@ -178,9 +182,11 @@ class GlueApp < Sinatra::Application
     "Welcome!" + env['warden'].user.inspect
   end
 
-  post '/sendGlue' do
+  post '/quizzes' do
     env['warden'].authenticate!(:access_token)
+    
     user = env['warden'].user
+    puts params.inspect
     keyword = params[:keyword]
     option0 = params[:option0]
     option1 = params[:option1]
@@ -205,6 +211,12 @@ class GlueApp < Sinatra::Application
 
     status 200
     user.options.to_json
+  end
+
+  post '/*' do
+    path = params[:splat]
+    puts path.inspect
+    puts params.inspect
   end
 
   # # start the server if ruby file executed directly
