@@ -120,19 +120,26 @@ class MarbleApp < Sinatra::Application
                 keyword: params[:keyword], 
                 option0: params[:option0], 
                 option1: params[:option1],  
-                answer:  params[:answer])
+                answer:  params[:answer],
+                uuid:    params[:uuid])
     
     puts Quiz.all.inspect
     status 204 # No Content
   end
+
+  get '/quizzes' do
+    env['warden'].authenticate!(:access_token)
+
+    status 200
+    Quiz.all.to_json
+  end
+
 
   get '/options' do
     env['warden'].authenticate!(:access_token)
 
     user = env['warden'].user
     # user.update_options
-
-    puts User.all.inspect
 
     res = user.options.map do |opt|
       [opt.name, opt.fb_id]
@@ -142,6 +149,7 @@ class MarbleApp < Sinatra::Application
     status 200
     res.to_json
   end
+
 
   post '/*' do
     path = params[:splat]
