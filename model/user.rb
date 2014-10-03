@@ -7,6 +7,7 @@
 #  fb_id        :string(255)
 #  access_token :string(255)
 #  logins       :text
+#  device_token :string(255)
 #
 
 class User < ActiveRecord::Base

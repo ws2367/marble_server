@@ -17,7 +17,6 @@ set :database, "sqlite3:./db/marble.sqlite3"
 
 # models
 # run `annotate --model-dir model` to annotate model files
-
 require './model/quiz.rb'
 require './model/user.rb'
 
@@ -111,6 +110,23 @@ class MarbleApp < Sinatra::Application
     { message: "Sorry, this request can not be authenticated. Try again." }.to_json
   end
 
+  # POST users/set_device_token
+  post '/set_device_token' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+    
+    device_token = params[:device_token]
+    logger.info "device token: %s" % device_token
+    
+    user.update_attribute("device_token", device_token)
+    
+    status 204
+  end
+  
+  #
+  # ===== Quiz related request handlers =====
+  # 
+
   post '/quizzes' do
     env['warden'].authenticate!(:access_token)
     
@@ -131,9 +147,12 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
 
     status 200
-    Quiz.all.to_json
+    {"Quiz" => Quiz.all}.to_json
   end
 
+  #
+  # ===== User related request handlers =====
+  # 
 
   get '/options' do
     env['warden'].authenticate!(:access_token)
@@ -141,10 +160,9 @@ class MarbleApp < Sinatra::Application
     user = env['warden'].user
     # user.update_options
 
-    res = user.options.map do |opt|
-      [opt.name, opt.fb_id]
+    res = User.all.map do |opt|
+      {name: opt.name, fb_id: opt.fb_id}
     end
-    puts res.inspect
 
     status 200
     res.to_json
@@ -157,6 +175,4 @@ class MarbleApp < Sinatra::Application
     puts params.inspect
   end
 
-  # # start the server if ruby file executed directly
-  # run! if app_file == $0
 end
