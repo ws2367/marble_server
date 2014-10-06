@@ -25,5 +25,17 @@ class Quiz < ActiveRecord::Base
   #   # @@quizzes << self
   # end
 
+  # popularity = tc + tp + nc*300 + nf*150
+  # tc: creation time of the last comment
+  # tp: creation time of the post
+  # nc: # of comments
+  # nf: # of follows
+  # POPULARITY_BASE: Tue, 01 Apr 2014 00:00:00 GMT
+  POPULARITY_BASE = 1396310400.0
   
+  # after_create {
+  #   self.with_lock do
+  #     self.update_attribute("popularity", (self.created_at.to_f - POPULARITY_BASE) * 2)
+  #   end
+  # }
 end

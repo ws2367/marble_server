@@ -88,7 +88,10 @@ class User < ActiveRecord::Base
     end
   end
 
- 
+ def reset_access_token
+  access_token = SecureRandom.urlsafe_base64 
+  self.update_attribute("access_token", access_token)
+ end
 
   
   # def ensure_fb_friends token

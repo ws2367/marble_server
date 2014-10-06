@@ -110,6 +110,20 @@ class MarbleApp < Sinatra::Application
     { message: "Sorry, this request can not be authenticated. Try again." }.to_json
   end
 
+  delete '/logout' do #mapped to DELETE users/sign_out 
+    @user = env['warden'].user
+    if @user.nil?
+      logger.info("Token not found.")
+      halt 404,  {'Content-Type' => 'application/json'}, 
+           {:message=>"Invalid token."}.to_json
+    else
+      @user.update_attribute("device_token", nil)
+      @user.reset_access_token
+    end
+
+    status 204
+  end
+
   # POST users/set_device_token
   post '/set_device_token' do
     env['warden'].authenticate!(:access_token)
