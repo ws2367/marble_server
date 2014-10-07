@@ -55,12 +55,17 @@ class MarbleAppTest < Minitest::Test
     assert matches.count == 1 # find one quiz of which uuid matches the uuid sent
   end
 
-  def test_it_get_options
+  def test_it_get_users_and_options
     get '/options', auth_params
     assert last_response.ok?
-    array = JSON.parse(last_response.body)
-    assert array[0].key? "name"
-    assert array[0].key? "fb_id"
+    first_resp = JSON.parse(last_response.body)
+    assert first_resp[0].key? "name"
+    assert first_resp[0].key? "fb_id"
+
+    get '/user', {:auth_token => @@token, :fb_id => first_resp[0]["fb_id"]}
+    assert last_response.ok?
+    second_resp = JSON.parse(last_response.body)
+    assert second_resp["name"] == first_resp[0]["name"]
   end
 
   def test_it_set_device_token
@@ -68,6 +73,26 @@ class MarbleAppTest < Minitest::Test
                                :device_token => "asdlkajqweoijdas"}
     assert last_response.status == 204
   end
+
+  def test_it_post_and_get_comment
+    get '/quizzes', auth_params
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    uuid = hash["Quiz"][0]["uuid"]
+
+    post '/comments', {:auth_token => @@token,
+                       :quiz_uuid  => uuid,
+                       :comment    => "test comment"}
+    assert last_response.status == 204
+
+    get '/comments', {:auth_token => @@token,
+                      :quiz_uuid  => uuid}
+    assert last_response.ok?
+    array = JSON.parse(last_response.body)
+    matches = array.select{|comment| comment["comment"] == "test comment"}            
+    assert matches.count > 0
+  end
+
 
   def after_tests
 

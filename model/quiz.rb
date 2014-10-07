@@ -11,10 +11,11 @@
 #  uuid       :string(255)
 #  created_at :datetime
 #  updated_at :datetime
+#  comments   :text
 #
 
 class Quiz < ActiveRecord::Base
-
+  serialize :comments
   # def initialize quiz
   #   @uuid    = UUIDTools::UUID.random_create.to_s
   #   @author  = quiz["author"]
@@ -24,6 +25,10 @@ class Quiz < ActiveRecord::Base
   #   @time    = Time.now
   #   # @@quizzes << self
   # end
+
+  after_create {
+    self.update_attribute("comments",[])
+  }
 
   # popularity = tc + tp + nc*300 + nf*150
   # tc: creation time of the last comment

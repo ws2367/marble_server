@@ -166,9 +166,50 @@ class MarbleApp < Sinatra::Application
     {"Quiz" => Quiz.all}.to_json
   end
 
+  post '/comments' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+
+    puts "On Quiz(%s), %s made the comment: %s" % [params[:quiz_uuid], user.name, params[:comment]]
+
+    quiz = Quiz.find_by_uuid(params[:quiz_uuid])
+    if quiz != nil
+      quiz.comments << {fb_id: user.fb_id, comment: params[:comment], time: Time.now}
+      quiz.save
+    else
+      puts "[ERROR] Cannot find quiz with uuid %s" % params[:quiz_uuid].to_s
+    end
+
+    status 204
+  end
+
+  get '/comments' do
+    env['warden'].authenticate!(:access_token)
+
+    quiz = Quiz.find_by_uuid(params[:quiz_uuid])
+    if quiz == nil
+      puts "[ERROR] Cannot find quiz with uuid %s" % params[:quiz_uuid].to_s
+      halt 400
+    end
+
+    status 200
+    quiz.comments.to_json
+  end
   #
   # ===== User related request handlers =====
   # 
+  get '/user' do
+    env['warden'].authenticate!(:access_token)
+
+    user = User.find_by_fb_id(params[:fb_id])
+    if user == nil
+      puts "[ERROR] Cannot find user with fb_id %s" % params[:fb_id].to_s
+      halt 400
+    end
+
+    status 200
+    user.to_json
+  end
 
   get '/options' do
     env['warden'].authenticate!(:access_token)
@@ -185,10 +226,10 @@ class MarbleApp < Sinatra::Application
   end
 
 
-  post '/*' do
-    path = params[:splat]
-    puts path.inspect
-    puts params.inspect
-  end
+  # post '/*' do
+  #   path = params[:splat]
+  #   puts path.inspect
+  #   puts params.inspect
+  # end
 
 end
