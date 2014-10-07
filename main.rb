@@ -111,7 +111,9 @@ class MarbleApp < Sinatra::Application
   end
 
   delete '/logout' do #mapped to DELETE users/sign_out 
+    env['warden'].authenticate!(:access_token)
     @user = env['warden'].user
+    puts params.inspect
     if @user.nil?
       logger.info("Token not found.")
       halt 404,  {'Content-Type' => 'application/json'}, 
