@@ -218,7 +218,7 @@ class MarbleApp < Sinatra::Application
   get '/options' do
     env['warden'].authenticate!(:access_token)
 
-    user = env['warden'].user
+    # user = env['warden'].user
     # user.update_options
 
     res = User.all.map do |opt|
@@ -233,8 +233,22 @@ class MarbleApp < Sinatra::Application
   # ===== Guess related request handlers =====
   # 
   
-  post '/guess' do
+  post '/guesses' do
+    env['warden'].authenticate!(:access_token)
+    puts "test"
+    user = env['warden'].user
+    quiz = Quiz.find_by_uuid(params[:quiz_uuid])
+    if quiz == nil
+      puts "[ERROR] Cannot find quiz with uuid %s" % params[:quiz_uuid].to_s
+      halt 400
+    end
 
+    g = user.guesses.create(quiz_id: quiz.id,
+                        answer:  params[:answer])
+    
+    puts g.inspect
+
+    # Guess.create(user_id)
     status 204
   end
 
