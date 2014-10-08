@@ -193,7 +193,8 @@ class MarbleApp < Sinatra::Application
     end
 
     status 200
-    quiz.comments.to_json
+    # so we can disguise it as a quiz
+    {uuid: quiz.uuid, comments: quiz.comments}.to_json
   end
   #
   # ===== User related request handlers =====
