@@ -244,9 +244,7 @@ class MarbleApp < Sinatra::Application
     end
 
     g = user.guesses.create(quiz_id: quiz.id,
-                        answer:  params[:answer])
-    
-    puts g.inspect
+                            answer:  params[:answer])
 
     # Guess.create(user_id)
     status 204

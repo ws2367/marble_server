@@ -2,16 +2,20 @@
 #
 # Table name: quizzes
 #
-#  id         :integer          not null, primary key
-#  author     :string(255)
-#  keyword    :string(255)
-#  option0    :string(255)
-#  option1    :string(255)
-#  answer     :string(255)
-#  uuid       :string(255)
-#  created_at :datetime
-#  updated_at :datetime
-#  comments   :text
+#  id           :integer          not null, primary key
+#  author       :string(255)
+#  keyword      :string(255)
+#  option0      :string(255)
+#  option1      :string(255)
+#  answer       :string(255)
+#  uuid         :string(255)
+#  created_at   :datetime
+#  updated_at   :datetime
+#  comments     :text
+#  author_name  :string(255)
+#  option0_name :string(255)
+#  option1_name :string(255)
+#  compare_num  :integer
 #
 
 class Quiz < ActiveRecord::Base

@@ -12,7 +12,7 @@
 
 class User < ActiveRecord::Base
   serialize :logins
-  has_many :guesses, inverse_of: :quiz
+  has_many :guesses, inverse_of: :user
   # attr_accessor :name, :fb_id, :access_token, :friends, :fb_friends, :options
   # @@users = []
 
