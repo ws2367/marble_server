@@ -19,7 +19,7 @@ set :database, "sqlite3:./db/marble.sqlite3"
 # run `annotate --model-dir model` to annotate model files
 require './model/quiz.rb'
 require './model/user.rb'
-
+require './model/guess.rb'
 
 Dir.glob('./config/*.rb').each do |file|
   require file
@@ -148,14 +148,17 @@ class MarbleApp < Sinatra::Application
     
     user = env['warden'].user
     
-    Quiz.create(author: user.fb_id, 
+    q = Quiz.create(author: user.fb_id, 
+                author_name: params[:author_name], 
                 keyword: params[:keyword], 
                 option0: params[:option0], 
+                option0_name: params[:option0_name],
                 option1: params[:option1],  
+                option1_name: params[:option1_name],
                 answer:  params[:answer],
                 uuid:    params[:uuid])
     
-    puts Quiz.all.inspect
+    # puts q.inspect
     status 204 # No Content
   end
 
@@ -224,6 +227,15 @@ class MarbleApp < Sinatra::Application
 
     status 200
     res.to_json
+  end
+
+  #
+  # ===== Guess related request handlers =====
+  # 
+  
+  post '/guess' do
+
+    status 204
   end
 
 

@@ -16,6 +16,7 @@
 
 class Quiz < ActiveRecord::Base
   serialize :comments
+  has_many :guesses, inverse_of: :quiz
   # def initialize quiz
   #   @uuid    = UUIDTools::UUID.random_create.to_s
   #   @author  = quiz["author"]
