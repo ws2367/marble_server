@@ -93,6 +93,16 @@ class MarbleAppTest < Minitest::Test
     assert matches.count > 0
   end
 
+  def test_it_post_and_get_status
+    post '/status', {:auth_token => @@token, 
+                     :status     => "test status"}
+    assert last_response.status == 204
+
+    get '/status', auth_params
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    assert hash["status"] == "test status"
+  end
 
   def after_tests
 

@@ -139,6 +139,24 @@ class MarbleApp < Sinatra::Application
     status 204
   end
   
+  post '/status' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+
+    user.statuses << {status: params[:status], time: Time.now}
+    user.save
+
+    status 204
+  end
+
+  get '/status' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+    puts "status: %s" % user.statuses.last
+
+    status 200
+    user.statuses.last.to_json
+  end
   #
   # ===== Quiz related request handlers =====
   # 
@@ -156,7 +174,8 @@ class MarbleApp < Sinatra::Application
                 option1: params[:option1],  
                 option1_name: params[:option1_name],
                 answer:  params[:answer],
-                uuid:    params[:uuid])
+                uuid:    params[:uuid],
+                compare_num: 0)
     
     # puts q.inspect
     status 204 # No Content
@@ -199,6 +218,7 @@ class MarbleApp < Sinatra::Application
     # so we can disguise it as a quiz
     {uuid: quiz.uuid, comments: quiz.comments}.to_json
   end
+
   #
   # ===== User related request handlers =====
   # 
@@ -245,6 +265,7 @@ class MarbleApp < Sinatra::Application
 
     g = user.guesses.create(quiz_id: quiz.id,
                             answer:  params[:answer])
+
 
     # Guess.create(user_id)
     status 204
