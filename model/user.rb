@@ -8,13 +8,12 @@
 #  access_token :string(255)
 #  logins       :text
 #  device_token :string(255)
-#  statuses     :text
 #
 
 class User < ActiveRecord::Base
   serialize :logins
-  serialize :statuses
-  has_many :guesses, inverse_of: :user
+  has_many :statuses, inverse_of: :user
+  has_many :guesses,  inverse_of: :user
   # attr_accessor :name, :fb_id, :access_token, :friends, :fb_friends, :options
   # @@users = []
 
@@ -70,7 +69,7 @@ class User < ActiveRecord::Base
   after_create {
     self.ensure_access_token
     self.update_attribute("logins",[])
-    self.update_attribute("statuses",[])
+    # self.update_attribute("statuses",[])
   }
 
   def log_in

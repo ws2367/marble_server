@@ -13,13 +13,18 @@ require 'warden'
 require 'securerandom'
 
 # database
-set :database, "sqlite3:./db/marble.sqlite3"
+# if ENV['RACK_ENV'] = 'test'
+  # set :database, "sqlite3:./test/db/test.sqlite3"
+# else
+  set :database, "sqlite3:./db/marble.sqlite3"
+# end
 
 # models
 # run `annotate --model-dir model` to annotate model files
 require './model/quiz.rb'
 require './model/user.rb'
 require './model/guess.rb'
+require './model/status.rb'
 
 Dir.glob('./config/*.rb').each do |file|
   require file
@@ -143,7 +148,7 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
 
-    user.statuses << {status: params[:status], time: Time.now}
+    user.statuses.create(status: params[:status])
     user.save
 
     status 204
@@ -157,6 +162,22 @@ class MarbleApp < Sinatra::Application
     status 200
     user.statuses.last.to_json
   end
+
+  #
+  # ===== updates related request handlers =====
+  # 
+  
+  get '/updates' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+    
+    statuses = Status.last(5)
+
+    status 200
+    {"Status" => statuses}.to_json
+  end
+
+
   #
   # ===== Quiz related request handlers =====
   # 

@@ -104,6 +104,14 @@ class MarbleAppTest < Minitest::Test
     assert hash["status"] == "test status"
   end
 
+  def test_it_get_updates
+    get '/updates', auth_params
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    assert hash.key? "Status"
+    puts "[TEST] --" + hash.inspect
+  end
+
   def after_tests
 
   end
