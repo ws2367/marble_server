@@ -171,7 +171,9 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
     
-    statuses = Status.last(5)
+    statuses = Status.last(5).map do |s|
+      {name: s.user.name, fb_id: s.user.fb_id, status: s.status, created_at: s.created_at}
+    end
 
     status 200
     {"Status" => statuses}.to_json
