@@ -88,8 +88,8 @@ class MarbleAppTest < Minitest::Test
     get '/comments', {:auth_token => @@token,
                       :quiz_uuid  => uuid}
     assert last_response.ok?
-    array = JSON.parse(last_response.body)
-    matches = array.select{|comment| comment["comment"] == "test comment"}            
+    hash = JSON.parse(last_response.body)
+    matches = hash["comments"].select{|comment| comment["comment"] == "test comment"}
     assert matches.count > 0
   end
 
