@@ -18,4 +18,15 @@ class Status < ActiveRecord::Base
   after_create {
     self.update_attribute("comments",[])
   }
+
+  def self.insert_comment post_uuid, fb_id, comment
+    status = Status.find_by_uuid(post_uuid)
+    if status != nil
+      status.comments << {fb_id: fb_id, comment: comment, time: Time.now}
+      status.save
+      return true
+    else
+      return false
+    end
+  end
 end

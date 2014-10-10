@@ -40,6 +40,17 @@ class Quiz < ActiveRecord::Base
     self.compare_num ||= 0
   end
 
+  def self.insert_comment post_uuid, fb_id, comment
+    quiz = Quiz.find_by_uuid(post_uuid)
+    if quiz != nil
+      quiz.comments << {fb_id: fb_id, comment: comment, time: Time.now}
+      quiz.save
+      return true
+    else
+      return false
+    end
+  end
+
   # popularity = tc + tp + nc*300 + nf*150
   # tc: creation time of the last comment
   # tp: creation time of the post

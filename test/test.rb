@@ -81,12 +81,12 @@ class MarbleAppTest < Minitest::Test
     uuid = hash["Quiz"][0]["uuid"]
 
     post '/comments', {:auth_token => @@token,
-                       :quiz_uuid  => uuid,
+                       :post_uuid  => uuid,
                        :comment    => "test comment"}
     assert last_response.status == 204
 
     get '/comments', {:auth_token => @@token,
-                      :quiz_uuid  => uuid}
+                      :post_uuid  => uuid}
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     matches = hash["comments"].select{|comment| comment["comment"] == "test comment"}
@@ -98,10 +98,10 @@ class MarbleAppTest < Minitest::Test
                      :status     => "test status"}
     assert last_response.status == 204
 
-    get '/status', auth_params
+    get '/status', {:auth_token => @@token, :fb_id => "1131095462"}
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
-    assert hash["status"] == "test status"
+    assert_equal hash["status"], "test status", "Failed to post/get status"
   end
 
   def test_it_get_updates

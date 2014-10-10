@@ -223,25 +223,24 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
 
-    puts "On Quiz(%s), %s made the comment: %s" % [params[:quiz_uuid], user.name, params[:comment]]
+    puts "On Post(%s), %s made the comment: %s" % [params[:post_uuid], user.name, params[:comment]]
 
-    quiz = Quiz.find_by_uuid(params[:quiz_uuid])
-    if quiz != nil
-      quiz.comments << {fb_id: user.fb_id, comment: params[:comment], time: Time.now}
-      quiz.save
-    else
-      puts "[ERROR] Cannot find quiz with uuid %s" % params[:quiz_uuid].to_s
+    unless Quiz.insert_comment params[:post_uuid], user.fb_id, params[:comment]
+      unless Status.insert_comment params[:post_uuid], user.fb_id, params[:comment]
+        puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
+        halt 400
+      end
     end
-
+    
     status 204
   end
 
   get '/comments' do
     env['warden'].authenticate!(:access_token)
 
-    quiz = Quiz.find_by_uuid(params[:quiz_uuid])
+    quiz = Quiz.find_by_uuid(params[:post_uuid])
     if quiz == nil
-      puts "[ERROR] Cannot find quiz with uuid %s" % params[:quiz_uuid].to_s
+      puts "[ERROR] Cannot find quiz with uuid %s" % params[:post_uuid].to_s
       halt 400
     end
 
