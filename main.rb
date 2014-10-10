@@ -155,14 +155,19 @@ class MarbleApp < Sinatra::Application
     status 204
   end
 
-  #TODO: get updates according to fb_id
   get '/status' do
     env['warden'].authenticate!(:access_token)
-    user = env['warden'].user
-    puts "status: %s" % user.statuses.last
 
-    status 200
-    user.statuses.last.to_json
+    puts "GET /status fb_id: %s" % params[:fb_id]
+
+    user = User.find_by_fb_id(params[:fb_id]) if params[:fb_id] != nil
+    if user == nil
+      logger.info("Cannot find user when updating status")
+      status 204
+    else
+      status 200
+      user.statuses.last.to_json
+    end
   end
 
   #
