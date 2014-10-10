@@ -148,12 +148,14 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
 
-    user.statuses.create(status: params[:status])
+    user.statuses.create(status: params[:status], 
+                         uuid: UUIDTools::UUID.random_create.to_s)
     user.save
 
     status 204
   end
 
+  #TODO: get updates according to fb_id
   get '/status' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
@@ -172,7 +174,8 @@ class MarbleApp < Sinatra::Application
     user = env['warden'].user
     
     statuses = Status.last(5).map do |s|
-      {name: s.user.name, fb_id: s.user.fb_id, status: s.status, created_at: s.created_at}
+      {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
+       status: s.status, created_at: s.created_at}
     end
 
     status 200

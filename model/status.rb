@@ -8,8 +8,8 @@
 #  comments   :text
 #  created_at :datetime
 #  updated_at :datetime
+#  uuid       :string(255)
 #
-
 
 class Status < ActiveRecord::Base
   serialize :comments
