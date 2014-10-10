@@ -8,13 +8,18 @@ require 'json'
 class MarbleAppTest < Minitest::Test
   include Rack::Test::Methods
   @@token = nil
+  
+  FB_NAME = "Wen Shaw"
+  FB_ID   = "1131095462"
+  FB_ACCESS_TOKEN = "CAAIrEsR4cRwBAFvpsHtUVBtXpud0wyca9JgCPpxvKcepWYlbZAawiEHbEnwIBQzwC8U5MR3vp28lXhsfa3RJ04yjMMfKzeAbhNYFMquKkvp1uDOmEDicqAXwSbZB4UEYVwaHcH20FkmtMi8adPjoVj58a3h29OwIHtwKkd2GIH3F1mP4Rkwb0c1OvvRR0pFKJ0wyglZBkXv2ruZAqfCY1XKyhP4L7QyiwtzNiIf0CA2shZCwy9dzb"
+  
   def app
     MarbleApp
   end
   
   # run before each test
   def setup
-    post '/login', :fb_access_token => "CAAIrEsR4cRwBAFvpsHtUVBtXpud0wyca9JgCPpxvKcepWYlbZAawiEHbEnwIBQzwC8U5MR3vp28lXhsfa3RJ04yjMMfKzeAbhNYFMquKkvp1uDOmEDicqAXwSbZB4UEYVwaHcH20FkmtMi8adPjoVj58a3h29OwIHtwKkd2GIH3F1mP4Rkwb0c1OvvRR0pFKJ0wyglZBkXv2ruZAqfCY1XKyhP4L7QyiwtzNiIf0CA2shZCwy9dzb"
+    post '/login', :fb_access_token => FB_ACCESS_TOKEN
     assert last_response.ok?
     # puts "[TEST] -- " + last_response.body
     hash = JSON.parse(last_response.body)
@@ -98,7 +103,7 @@ class MarbleAppTest < Minitest::Test
                      :status     => "test status"}
     assert last_response.status == 204
 
-    get '/status', {:auth_token => @@token, :fb_id => "1131095462"}
+    get '/status', {:auth_token => @@token, :fb_id => FB_ID}
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     assert_equal hash["status"], "test status", "Failed to post/get status"
@@ -113,6 +118,8 @@ class MarbleAppTest < Minitest::Test
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     matches = hash["comments"].select{|comment| comment["comment"] == "test status comment"}
+    assert_equal matches.first["name"], FB_NAME, "Name in the comment does not match."
+
     # puts "[TEST] -- " + matches.inspect
     assert matches.count > 0
   end
