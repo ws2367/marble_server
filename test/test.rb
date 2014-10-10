@@ -93,7 +93,7 @@ class MarbleAppTest < Minitest::Test
     assert matches.count > 0
   end
 
-  def test_it_post_and_get_status
+  def test_it_post_and_get_status_and_comment
     post '/status', {:auth_token => @@token, 
                      :status     => "test status"}
     assert last_response.status == 204
@@ -102,6 +102,19 @@ class MarbleAppTest < Minitest::Test
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     assert_equal hash["status"], "test status", "Failed to post/get status"
+
+    post '/comments', {:auth_token => @@token,
+                       :post_uuid  => hash['uuid'],
+                       :comment    => "test status comment"}
+    assert last_response.status == 204
+
+    get '/comments', {:auth_token => @@token,
+                      :post_uuid  => hash['uuid']}
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    matches = hash["comments"].select{|comment| comment["comment"] == "test status comment"}
+    # puts "[TEST] -- " + matches.inspect
+    assert matches.count > 0
   end
 
   def test_it_get_updates
@@ -109,7 +122,9 @@ class MarbleAppTest < Minitest::Test
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     assert hash.key? "Status"
-    puts "[TEST] --" + hash.inspect
+
+
+    # puts "[TEST] --" + hash.inspect
   end
 
   def after_tests

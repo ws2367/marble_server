@@ -238,15 +238,17 @@ class MarbleApp < Sinatra::Application
   get '/comments' do
     env['warden'].authenticate!(:access_token)
 
-    quiz = Quiz.find_by_uuid(params[:post_uuid])
-    if quiz == nil
-      puts "[ERROR] Cannot find quiz with uuid %s" % params[:post_uuid].to_s
-      halt 400
+    post = nil
+    unless (post = Quiz.find_by_uuid(params[:post_uuid])) != nil
+      unless (post = Status.find_by_uuid(params[:post_uuid])) != nil
+        puts "[ERROR] Cannot find quiz with uuid %s" % params[:post_uuid].to_s
+        halt 400
+      end
     end
 
     status 200
-    # so we can disguise it as a quiz
-    {uuid: quiz.uuid, comments: quiz.comments}.to_json
+    # so we can disguise it as a post
+    {uuid: post.uuid, comments: post.comments}.to_json
   end
 
   #
