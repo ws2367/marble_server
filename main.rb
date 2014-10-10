@@ -241,7 +241,7 @@ class MarbleApp < Sinatra::Application
     post = nil
     unless (post = Quiz.find_by_uuid(params[:post_uuid])) != nil
       unless (post = Status.find_by_uuid(params[:post_uuid])) != nil
-        puts "[ERROR] Cannot find quiz with uuid %s" % params[:post_uuid].to_s
+        puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
         halt 400
       end
     end
