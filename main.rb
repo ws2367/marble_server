@@ -225,8 +225,8 @@ class MarbleApp < Sinatra::Application
 
     puts "On Post(%s), %s made the comment: %s" % [params[:post_uuid], user.name, params[:comment]]
 
-    unless Quiz.insert_comment params[:post_uuid], user.fb_id, params[:comment]
-      unless Status.insert_comment params[:post_uuid], user.fb_id, params[:comment]
+    unless Quiz.insert_comment params[:post_uuid], user, params[:comment]
+      unless Status.insert_comment params[:post_uuid], user, params[:comment]
         puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
         halt 400
       end

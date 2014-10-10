@@ -40,10 +40,11 @@ class Quiz < ActiveRecord::Base
     self.compare_num ||= 0
   end
 
-  def self.insert_comment post_uuid, fb_id, comment
+  def self.insert_comment post_uuid, user, comment
     quiz = Quiz.find_by_uuid(post_uuid)
     if quiz != nil
-      quiz.comments << {fb_id: fb_id, comment: comment, time: Time.now}
+      quiz.comments << {fb_id: user.fb_id, name:user.name, 
+                        comment: comment, time: Time.now}
       quiz.save
       return true
     else
