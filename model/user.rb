@@ -14,6 +14,8 @@ class User < ActiveRecord::Base
   serialize :logins
   has_many :statuses, inverse_of: :user
   has_many :guesses,  inverse_of: :user
+  has_many :keywords, inverse_of: :user
+  has_many :ranks,    inverse_of: :user
   # attr_accessor :name, :fb_id, :access_token, :friends, :fb_friends, :options
   # @@users = []
 

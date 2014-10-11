@@ -25,6 +25,8 @@ require './model/quiz.rb'
 require './model/user.rb'
 require './model/guess.rb'
 require './model/status.rb'
+require './model/rank.rb'
+require './model/keyword.rb'
 
 Dir.glob('./config/*.rb').each do |file|
   require file
