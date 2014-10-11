@@ -40,6 +40,14 @@ class User < ActiveRecord::Base
   #   end
   # end
   
+  def self.find_or_create fb_id, name
+    res = User.find_by_fb_id(fb_id)
+    if res == nil
+      res = User.create(name: name, fb_id: fb_id)
+    end
+    return res
+  end
+
   def self.update_options
     # add players that are tester's FB friends to tester's friends list
     fb_friend_ids = @fb_friends.map{|elem| elem["id"]}

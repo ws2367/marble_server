@@ -17,4 +17,17 @@ class Rank < ActiveRecord::Base
   after_create {
     self.update_attribute("score", 0)
   }
+
+  def self.find_or_create keyword, user
+    res = user.ranks.find_by_keyword_id(keyword.id)
+    if res == nil
+      res = user.ranks.create(keyword_id: keyword.id)
+    end
+    return res
+  end
+
+  def increment_score
+    self.update_attribute("score", self.score.to_i + 1)
+  end
+
 end

@@ -12,4 +12,14 @@
 class Keyword < ActiveRecord::Base
   has_many :ranks,   inverse_of: :keyword
   belongs_to :user,  inverse_of: :keywords
+
+  def self.find_or_create keyword_, user
+    res = Keyword.find_by_keyword(keyword_)
+    if res == nil
+      res = user.keywords.create(keyword: keyword_)
+    end
+    return res
+  end
+
+  
 end

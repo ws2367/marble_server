@@ -16,6 +16,7 @@
 #  option0_name :string(255)
 #  option1_name :string(255)
 #  compare_num  :integer
+#  keyword_id   :integer
 #
 
 class Quiz < ActiveRecord::Base
@@ -50,6 +51,28 @@ class Quiz < ActiveRecord::Base
     else
       return false
     end
+  end
+
+  def self.create_quiz_dependencies hash, user
+    keyword = Keyword.find_or_create hash[:keyword], user
+
+    option0 = User.find_or_create hash[:option0], hash[:option0_name]
+    option1 = User.find_or_create hash[:option1], hash[:option1_name]
+
+    q = Quiz.create(author: user.fb_id, 
+                    author_name: hash[:author_name], 
+                    keyword_id: keyword.id, 
+                    option0: hash[:option0], 
+                    option0_name: hash[:option0_name],
+                    option1: hash[:option1],  
+                    option1_name: hash[:option1_name],
+                    answer:  hash[:answer],
+                    uuid:    hash[:uuid],
+                    compare_num: 0)
+
+    answer = (hash[:answer] == hash[:option0_name]) ? option0 : option1
+    rank = Rank.find_or_create(keyword, answer)
+    rank.increment_score
   end
 
   # popularity = tc + tp + nc*300 + nf*150

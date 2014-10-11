@@ -199,7 +199,7 @@ class MarbleApp < Sinatra::Application
     
     user = env['warden'].user
     
-    q = Quiz.create(author: user.fb_id, 
+    q = Quiz.create_quiz_dependencies({
                 author_name: params[:author_name], 
                 keyword: params[:keyword], 
                 option0: params[:option0], 
@@ -207,8 +207,7 @@ class MarbleApp < Sinatra::Application
                 option1: params[:option1],  
                 option1_name: params[:option1_name],
                 answer:  params[:answer],
-                uuid:    params[:uuid],
-                compare_num: 0)
+                uuid:    params[:uuid]}, user)
     
     # puts q.inspect
     status 204 # No Content
