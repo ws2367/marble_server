@@ -43,10 +43,12 @@ class MarbleAppTest < Minitest::Test
   def test_it_post_and_get_quizzes
     uuid = UUIDTools::UUID.random_create.to_s
     params = {:auth_token => @@token, 
-              :keyword => "keyword1", 
+              :keyword => "keyword2", 
               :option0 => "204958204",
-              :option1 => "230591204",
-              :answer  => "230591204",
+              :option0_name => "name 0",
+              :option1 => "220591204",
+              :option1_name => "name 1",
+              :answer  => "220591204",
               :uuid    => uuid
              }
     post '/quizzes', params
@@ -129,9 +131,10 @@ class MarbleAppTest < Minitest::Test
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     assert hash.key? "Status"
+    assert hash.key? "Keyword_Update"
 
 
-    # puts "[TEST] --" + hash.inspect
+    puts "[TEST] --" + hash.inspect
   end
 
   def after_tests

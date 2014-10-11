@@ -43,7 +43,7 @@ class Rank < ActiveRecord::Base
       to_remove = old_keyword - new_keyword
       to_add    = new_keyword - old_keyword
 
-      self.user.keyword_updates.create(added: to_add, removed: to_remove, 
+      self.user.keyword_updates.create(added: to_add.map{|k| k.id}, removed: to_remove.map{|k| k.id}, 
                                        uuid: UUIDTools::UUID.random_create.to_s)
       
       self.user.profile_keywords.delete(to_remove)
