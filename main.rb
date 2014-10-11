@@ -27,6 +27,7 @@ require './model/guess.rb'
 require './model/status.rb'
 require './model/rank.rb'
 require './model/keyword.rb'
+require './model/keyword_update.rb'
 
 Dir.glob('./config/*.rb').each do |file|
   require file
@@ -199,6 +200,8 @@ class MarbleApp < Sinatra::Application
     
     user = env['warden'].user
     
+    #TODO: let Quiz model be associated with User as 
+    #      in author, option0 and option1
     q = Quiz.create_quiz_dependencies({
                 author_name: params[:author_name], 
                 keyword: params[:keyword], 

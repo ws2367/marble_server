@@ -16,6 +16,8 @@ class User < ActiveRecord::Base
   has_many :guesses,  inverse_of: :user
   has_many :keywords, inverse_of: :user
   has_many :ranks,    inverse_of: :user
+  has_many :keyword_updates, inverse_of: :user
+  has_and_belongs_to_many :profile_keywords, class_name: "Keyword"
   # attr_accessor :name, :fb_id, :access_token, :friends, :fb_friends, :options
   # @@users = []
 
