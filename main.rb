@@ -188,12 +188,12 @@ class MarbleApp < Sinatra::Application
 
     keyword_updates = KeywordUpdate.last(5).map do |k|
       {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
-       keywords: k.added{|a| Keyword.find_by_id(a).keyword}, 
+       keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
        created_at: k.created_at  }
     end
 
     status 200
-    {"Status" => statuses, "Keyword_Update" => keyword_updates}.to_json
+    {"Status_Update" => statuses, "Keyword_Update" => keyword_updates}.to_json
   end
 
 

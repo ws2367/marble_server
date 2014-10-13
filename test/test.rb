@@ -130,7 +130,7 @@ class MarbleAppTest < Minitest::Test
     get '/updates', auth_params
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
-    assert hash.key? "Status"
+    assert hash.key? "Status_Update"
     assert hash.key? "Keyword_Update"
 
 

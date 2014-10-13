@@ -62,6 +62,7 @@ class Quiz < ActiveRecord::Base
     q = Quiz.create(author: user.fb_id, 
                     author_name: hash[:author_name], 
                     keyword_id: keyword.id, 
+                    keyword: keyword.keyword,
                     option0: hash[:option0], 
                     option0_name: hash[:option0_name],
                     option1: hash[:option1],  
