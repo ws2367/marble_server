@@ -296,6 +296,17 @@ class MarbleApp < Sinatra::Application
   end
 
   #
+  # ===== Keyword related request handlers =====
+  # 
+
+  get '/keywords' do
+    env['warden'].authenticate!(:access_token)
+
+    status 200
+    Keyword.all.pluck(:keyword).to_json
+  end
+
+  #
   # ===== Guess related request handlers =====
   # 
   

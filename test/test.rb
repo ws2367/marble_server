@@ -138,6 +138,13 @@ class MarbleAppTest < Minitest::Test
                        :post_uuid  => uuid,
                        :comment    => "test keyword comment"}
 
+    # puts "[TEST] --" + hash.inspect
+  end
+
+  def test_it_get_keywords
+    get '/keywords', auth_params
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
     puts "[TEST] --" + hash.inspect
   end
 
