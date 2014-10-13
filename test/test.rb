@@ -133,6 +133,10 @@ class MarbleAppTest < Minitest::Test
     assert hash.key? "Status_Update"
     assert hash.key? "Keyword_Update"
 
+    uuid = hash["Keyword_Update"][0]["uuid"]
+    post '/comments', {:auth_token => @@token,
+                       :post_uuid  => uuid,
+                       :comment    => "test keyword comment"}
 
     puts "[TEST] --" + hash.inspect
   end

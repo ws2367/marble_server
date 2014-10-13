@@ -237,8 +237,10 @@ class MarbleApp < Sinatra::Application
 
     unless Quiz.insert_comment params[:post_uuid], user, params[:comment]
       unless Status.insert_comment params[:post_uuid], user, params[:comment]
-        puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
-        halt 400
+        unless KeywordUpdate.insert_comment params[:post_uuid], user, params[:comment]
+          puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
+          halt 400
+        end
       end
     end
     
@@ -251,8 +253,10 @@ class MarbleApp < Sinatra::Application
     post = nil
     unless (post = Quiz.find_by_uuid(params[:post_uuid])) != nil
       unless (post = Status.find_by_uuid(params[:post_uuid])) != nil
-        puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
-        halt 400
+        unless (post = KeywordUpdate.find_by_uuid(params[:post_uuid])) != nil
+          puts "[ERROR] In GET /comment, cannot find post with uuid %s" % params[:post_uuid].to_s
+          halt 400
+        end
       end
     end
 
