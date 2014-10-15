@@ -93,7 +93,21 @@ class User < ActiveRecord::Base
     self.logins != nil and self.logins.count > 0
   end
 
- 
+  def first_keyword
+    if self.profile_keywords[0] == nil
+      return ""
+    else
+      self.profile_keywords[0].keyword
+    end
+  end
+
+  def all_profile_keywords
+     self.profile_keywords.pluck(:keyword)
+  end
+
+  def latest_status
+    self.statuses.order("created_at desc").limit(1)[0]
+  end
 
    #TODO: let token expire
   def ensure_access_token

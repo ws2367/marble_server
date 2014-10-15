@@ -158,21 +158,7 @@ class MarbleApp < Sinatra::Application
     status 204
   end
 
-  get '/status' do
-    env['warden'].authenticate!(:access_token)
-
-    puts "GET /status fb_id: %s" % params[:fb_id]
-
-    user = User.find_by_fb_id(params[:fb_id]) if params[:fb_id] != nil
-    if user == nil
-      logger.info("Cannot find user when updating status")
-      status 204
-    else
-      status 200
-      user.statuses.last.to_json
-    end
-  end
-
+ 
   #
   # ===== updates related request handlers =====
   # 
@@ -226,7 +212,7 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
 
     status 200
-    {"Quiz" => Quiz.all}.to_json
+    {"Quiz" => Quiz.all}.to_json(:except => [ :id, :updated_at, :comments])
   end
 
   post '/comments' do
@@ -268,31 +254,26 @@ class MarbleApp < Sinatra::Application
   #
   # ===== User related request handlers =====
   # 
+  
   get '/user' do
     env['warden'].authenticate!(:access_token)
 
-    user = User.find_by_fb_id(params[:fb_id])
+    user = User.find_by_fb_id(params[:fb_id]) if params[:fb_id] != nil
     if user == nil
       puts "[ERROR] Cannot find user with fb_id %s" % params[:fb_id].to_s
       halt 400
     end
 
     status 200
-    user.to_json
+    user.to_json(:only    => [:name, :fb_id], 
+                 :methods => [:latest_status, :all_profile_keywords])
   end
 
   get '/options' do
     env['warden'].authenticate!(:access_token)
 
-    # user = env['warden'].user
-    # user.update_options
-
-    res = User.all.map do |opt|
-      {name: opt.name, fb_id: opt.fb_id}
-    end
-
     status 200
-    res.to_json
+    User.all.to_json(:only => [:fb_id, :name], :methods => :first_keyword)
   end
 
   #
