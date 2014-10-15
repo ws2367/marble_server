@@ -97,7 +97,7 @@ class User < ActiveRecord::Base
     if self.profile_keywords[0] == nil
       return nil
     else
-      self.profile_keywords[0].keyword
+      return self.profile_keywords[0].keyword
     end
   end
 
