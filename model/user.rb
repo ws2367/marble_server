@@ -95,7 +95,7 @@ class User < ActiveRecord::Base
 
   def first_keyword
     if self.profile_keywords[0] == nil
-      return ""
+      return nil
     else
       self.profile_keywords[0].keyword
     end
@@ -106,7 +106,11 @@ class User < ActiveRecord::Base
   end
 
   def latest_status
-    self.statuses.order("created_at desc").limit(1)[0]
+    if self.statuses.order("created_at desc").limit(1)[0] == nil
+      return nil
+    else
+      return self.statuses.order("created_at desc").limit(1)[0]["status"]
+    end
   end
 
    #TODO: let token expire
