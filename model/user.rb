@@ -8,6 +8,7 @@
 #  access_token :string(255)
 #  logins       :text
 #  device_token :string(255)
+#  badge_number :integer          default(0)
 #
 
 class User < ActiveRecord::Base
@@ -126,7 +127,10 @@ class User < ActiveRecord::Base
   self.update_attribute("access_token", access_token)
  end
 
-  
+  def increment_badge_number
+    self.update_attribute("badge_number", (self.badge_number.to_i + 1))
+  end
+
   # def ensure_fb_friends token
   #   if @fb_friends == nil or @fb_friends.count == 0
   #     Thread.new{

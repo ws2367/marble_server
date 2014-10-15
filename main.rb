@@ -10,6 +10,7 @@ require 'time'
 require 'koala'
 # Refer Sinatra+Warden Token Authentication to https://github.com/nmattisson/sinatra-warden-api
 require 'warden'
+require 'houston'
 require 'securerandom'
 
 # database
@@ -134,30 +135,6 @@ class MarbleApp < Sinatra::Application
     status 204
   end
 
-  # POST users/set_device_token
-  post '/set_device_token' do
-    env['warden'].authenticate!(:access_token)
-    user = env['warden'].user
-    
-    device_token = params[:device_token]
-    logger.info "device token: %s" % device_token
-    
-    user.update_attribute("device_token", device_token)
-    
-    status 204
-  end
-  
-  post '/status' do
-    env['warden'].authenticate!(:access_token)
-    user = env['warden'].user
-
-    user.statuses.create(status: params[:status], 
-                         uuid: UUIDTools::UUID.random_create.to_s)
-    user.save
-
-    status 204
-  end
-
  
   #
   # ===== updates related request handlers =====
@@ -194,7 +171,7 @@ class MarbleApp < Sinatra::Application
     
     #TODO: let Quiz model be associated with User as 
     #      in author, option0 and option1
-    q = Quiz.create_quiz_dependencies({
+    opt0, opt1 = Quiz.create_quiz_dependencies({
                 author_name: params[:author_name], 
                 keyword: params[:keyword], 
                 option0: params[:option0], 
@@ -204,7 +181,13 @@ class MarbleApp < Sinatra::Application
                 answer:  params[:answer],
                 uuid:    params[:uuid]}, user)
     
-    # puts q.inspect
+    opt0.increment_badge_number
+    opt1.increment_badge_number
+    
+    alert = "#{params[:author_name]} compared you"
+    send_push_notification opt0, alert, opt0.badge_number, nil
+    send_push_notification opt1, alert, opt1.badge_number, nil
+
     status 204 # No Content
   end
 
@@ -286,6 +269,30 @@ class MarbleApp < Sinatra::Application
 
     status 200
     User.all.to_json(:only => [:fb_id, :name], :methods => :first_keyword)
+  end
+
+  # POST users/set_device_token
+  post '/set_device_token' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+    
+    device_token = params[:device_token]
+    logger.info "device token: %s" % device_token
+    
+    user.update_attribute("device_token", device_token)
+    
+    status 204
+  end
+  
+  post '/status' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+
+    user.statuses.create(status: params[:status], 
+                         uuid: UUIDTools::UUID.random_create.to_s)
+    user.save
+
+    status 204
   end
 
   #
