@@ -41,6 +41,16 @@ class Quiz < ActiveRecord::Base
     self.compare_num ||= 0
   end
 
+  def answered_before user
+    guess = user.guesses.find_by_quiz_id(self.id)
+    if guess == nil
+      return nil 
+    else
+      return guess.answer
+    end
+  end
+
+  
   def self.insert_comment post_uuid, user, comment
     quiz = Quiz.find_by_uuid(post_uuid)
     if quiz != nil

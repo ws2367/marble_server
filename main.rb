@@ -210,9 +210,21 @@ class MarbleApp < Sinatra::Application
 
   get '/quizzes' do
     env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+
+    resp = Quiz.all.map{|q|
+     p = q.attributes
+     p.delete("updated_at")
+     p.delete("keyword_id")
+     p.delete("id")
+     p["answered_before"] = q.answered_before(user)
+     p
+    }
 
     status 200
-    {"Quiz" => Quiz.all}.to_json(:except => [ :id, :updated_at, :comments])
+    {"Quiz" => resp}.to_json
+    # {"Quiz" => Quiz.all}.to_json(:except  => [ :id, :updated_at, :comments],
+    #                              :methods => :answered_before(user))
   end
 
   post '/comments' do
