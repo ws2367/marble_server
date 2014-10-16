@@ -43,7 +43,25 @@ class MarbleApp < Sinatra::Application
     content_type 'application/json'
   end
 
+  configure do 
+    @@apn = Houston::Client.development
+    @@apn.certificate = File.read("config/apn_development_marble.pem")
+  end
   
+  def send_push_notification user, alert, badge, custom_data
+    if user.device_token != nil
+      notification = Houston::Notification.new(device: user.device_token)
+      notification.alert = alert
+      notification.badge = badge
+      if custom_data != nil
+        notification.content_available = true
+        notification.custom_data = custom_data
+      end
+
+      @@apn.push(notification)  
+      puts "Notification is sent to user #{user.name}"
+    end
+  end
   #
   #========== Routes ==============
   #
@@ -183,10 +201,10 @@ class MarbleApp < Sinatra::Application
     
     opt0.increment_badge_number
     opt1.increment_badge_number
-    
+
     alert = "#{params[:author_name]} compared you"
-    send_push_notification opt0, alert, opt0.badge_number, nil
-    send_push_notification opt1, alert, opt1.badge_number, nil
+    send_push_notification opt0, alert, opt0.badge_number, {post_uuid: params[:uuid]}
+    send_push_notification opt1, alert, opt1.badge_number, {post_uuid: params[:uuid]}
 
     status 204 # No Content
   end
@@ -215,16 +233,21 @@ class MarbleApp < Sinatra::Application
     user = env['warden'].user
 
     puts "On Post(%s), %s made the comment: %s" % [params[:post_uuid], user.name, params[:comment]]
-
-    unless Quiz.insert_comment params[:post_uuid], user, params[:comment]
-      unless Status.insert_comment params[:post_uuid], user, params[:comment]
-        unless KeywordUpdate.insert_comment params[:post_uuid], user, params[:comment]
+    post = nil
+    unless (post = Quiz.insert_comment params[:post_uuid], user, params[:comment])
+      unless (post = Status.insert_comment params[:post_uuid], user, params[:comment])
+        unless (post = KeywordUpdate.insert_comment params[:post_uuid], user, params[:comment])
           puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
           halt 400
         end
       end
     end
     
+    receiver = post.user
+    badge_number = receiver ? receiver.badge_number : 1
+    alert = "#{user.name} commented on your post"
+    send_push_notification receiver, alert, badge_number, {post_uuid: params[:post_uuid]}
+
     status 204
   end
 
@@ -312,7 +335,7 @@ class MarbleApp < Sinatra::Application
   
   post '/guesses' do
     env['warden'].authenticate!(:access_token)
-    puts "test"
+
     user = env['warden'].user
     quiz = Quiz.find_by_uuid(params[:quiz_uuid])
     if quiz == nil

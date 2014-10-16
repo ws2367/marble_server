@@ -25,9 +25,9 @@ class Status < ActiveRecord::Base
       status.comments << {fb_id: user.fb_id, name:user.name,
                           comment: comment, time: Time.now}
       status.save
-      return true
+      return status
     else
-      return false
+      return nil
     end
   end
 end

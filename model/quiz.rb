@@ -50,6 +50,9 @@ class Quiz < ActiveRecord::Base
     end
   end
 
+  def user
+    return User.find_by_fb_id(self.author)
+  end
   
   def self.insert_comment post_uuid, user, comment
     quiz = Quiz.find_by_uuid(post_uuid)
@@ -57,9 +60,9 @@ class Quiz < ActiveRecord::Base
       quiz.comments << {fb_id: user.fb_id, name:user.name, 
                         comment: comment, time: Time.now}
       quiz.save
-      return true
+      return quiz
     else
-      return false
+      return nil
     end
   end
 

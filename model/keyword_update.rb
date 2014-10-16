@@ -31,9 +31,9 @@ class KeywordUpdate < ActiveRecord::Base
       keyword_update.comments << {fb_id: user.fb_id, name:user.name,
                                   comment: comment, time: Time.now}
       keyword_update.save
-      return true
+      return keyword_update
     else
-      return false
+      return nil
     end
   end
 end
