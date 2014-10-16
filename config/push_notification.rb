@@ -1,5 +1,5 @@
-@apn = Houston::Client.development
-@apn.certificate = File.read("config/apn_development_marble.pem")
+@@apn = Houston::Client.development
+@@apn.certificate = File.read("config/apn_development_marble.pem")
 
 
 def send_push_notification user, alert, badge, custom_data
@@ -12,7 +12,7 @@ def send_push_notification user, alert, badge, custom_data
       notification.custom_data = custom_data
     end
 
-    @apn.push(notification)  
+    @@apn.push(notification)  
     puts "Notification is sent to user #{user.name}"
   end
 end
