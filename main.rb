@@ -244,6 +244,7 @@ class MarbleApp < Sinatra::Application
     end
     
     receiver = post.user
+    puts "Going to send notificationt for comments on %s" % post.user.name
     badge_number = receiver ? receiver.badge_number : 1
     alert = "#{user.name} commented on your post"
     send_push_notification receiver, alert, badge_number, {post_uuid: params[:post_uuid]}
@@ -307,6 +308,17 @@ class MarbleApp < Sinatra::Application
     status 204
   end
   
+  post '/set_badge_number' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+
+    badge_number = params["badge_number"]
+    puts "[DEBUG] -- received badge number " + badge_number.to_s
+    user.update_attribute("badge_number", badge_number)
+
+    status 204
+  end
+
   post '/status' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
@@ -391,7 +403,7 @@ class MarbleApp < Sinatra::Application
       quiz: quizzes,
       keyword_update: keyword_updates
     }
-    puts "NOTIF: " + resp.inspect
+  
     status 200
     resp.to_json
   end
