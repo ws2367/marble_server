@@ -149,6 +149,18 @@ class MarbleAppTest < Minitest::Test
     puts "[TEST] --" + hash.inspect
   end
 
+
+  def test_it_get_notifications
+    get '/notifications', auth_params
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    assert hash.key? "comment"
+    assert hash.key? "quiz"
+    assert hash.key? "keyword_updates"
+    
+    puts "[TEST] -- Notification: " + hash.inspect
+  end
+
   def after_tests
 
   end
