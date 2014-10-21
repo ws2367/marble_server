@@ -17,11 +17,14 @@
 #  option1_name :string(255)
 #  compare_num  :integer
 #  keyword_id   :integer
+#  popularity   :float            default(0.0)
 #
 
 class Quiz < ActiveRecord::Base
   serialize :comments
   has_many :guesses, inverse_of: :quiz
+
+  
   # def initialize quiz
   #   @uuid    = UUIDTools::UUID.random_create.to_s
   #   @author  = quiz["author"]
@@ -34,7 +37,10 @@ class Quiz < ActiveRecord::Base
 
   after_create {
     self.update_attribute("comments",[])
+    self.update_attribute("popularity", (self.created_at.to_f - POPULARITY_BASE) * 2)
   }
+
+  self.per_page = 20
 
   before_save :default_compare_num
   def default_compare_num
@@ -59,6 +65,10 @@ class Quiz < ActiveRecord::Base
     if quiz != nil
       quiz.comments << {fb_id: user.fb_id, name:user.name, 
                         comment: comment, time: Time.now}
+      
+      subtrahend = (quiz.comments.count > 1 ? quiz.comments.last(2)[0][:time].to_f :
+                                              quiz.created_at.to_f)
+      quiz.popularity = quiz.popularity.to_f - subtrahend + quiz.comments.last[:time].to_f + 300.0
       quiz.save
       return quiz
     else

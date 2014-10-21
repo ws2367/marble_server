@@ -11,3 +11,4 @@ gem 'koala'
 gem "rake"
 gem 'annotate', '~> 2.6.5'
 gem 'houston'
+gem 'will_paginate', '~> 3.0'

@@ -9,6 +9,7 @@
 #  created_at :datetime
 #  updated_at :datetime
 #  uuid       :string(255)
+#  popularity :float            default(0.0)
 #
 
 class Status < ActiveRecord::Base
@@ -17,17 +18,33 @@ class Status < ActiveRecord::Base
 
   after_create {
     self.update_attribute("comments",[])
+    self.update_attribute("popularity", (self.created_at.to_f - POPULARITY_BASE) * 2)
   }
+
+  self.per_page = 10
 
   def self.insert_comment post_uuid, user, comment
     status = Status.find_by_uuid(post_uuid)
     if status != nil
       status.comments << {fb_id: user.fb_id, name:user.name,
                           comment: comment, time: Time.now}
+      subtrahend = (status.comments.count > 1 ? status.comments.last(2)[0][:time].to_f :
+                                                status.created_at.to_f)
+      status.popularity = status.popularity.to_f - subtrahend + status.comments.last[:time].to_f + 300.0
       status.save
       return status
     else
       return nil
     end
   end
+
+  scope :popular,
+    order("popularity desc, updated_at desc, id desc")
+
+  def self.query_popular_posts(user_id, start_over, last_id)
+    query_result = Post.active.popular
+    return fetch_segment(query_result, start_over, last_of_previous_post_ids)
+  end
+
+
 end

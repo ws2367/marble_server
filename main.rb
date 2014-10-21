@@ -12,6 +12,8 @@ require 'koala'
 require 'warden'
 require 'houston'
 require 'securerandom'
+require 'will_paginate'
+require 'will_paginate/active_record'
 
 # database
 # if ENV['RACK_ENV'] = 'test'
@@ -22,6 +24,8 @@ require 'securerandom'
 
 # models
 # run `annotate --model-dir model` to annotate model files
+POPULARITY_BASE = 1396310400.0
+
 require './model/quiz.rb'
 require './model/user.rb'
 require './model/guess.rb'
@@ -161,16 +165,18 @@ class MarbleApp < Sinatra::Application
   get '/updates' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
-    
-    statuses = Status.last(5).map do |s|
+    puts "[DEBUG] -- page: " + params[:page]
+    statuses = 
+      Status.order('created_at DESC').page(params[:page]).map do |s|
       {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
-       status: s.status, created_at: s.created_at}
+       status: s.status, created_at: s.created_at, popularity: s.popularity}
     end
 
-    keyword_updates = KeywordUpdate.last(5).map do |k|
+    keyword_updates = 
+      KeywordUpdate.order('created_at DESC').page(params[:page]).map do |k|
       {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
        keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
-       created_at: k.created_at  }
+       created_at: k.created_at, popularity: k.popularity }
     end
 
     status 200
@@ -213,7 +219,9 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
 
-    resp = Quiz.all.map{|q|
+    puts "[DEBUG] -- page: " + params[:page]
+
+    resp = Quiz.order('created_at DESC').page(params[:page]).map{|q|
      p = q.attributes
      p.delete("updated_at")
      p.delete("keyword_id")
@@ -371,15 +379,15 @@ class MarbleApp < Sinatra::Application
     quizzes_comments = Quiz.where("option1 = ? or option0 = ? or author = ?",
                        user.fb_id, user.fb_id, user.fb_id).pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "quiz"}; 
-                       t[1]}.flatten(1).sort{|a,b| a["time"] <=> b["time"]}.last(10)
+                       t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
     keyword_comments = user.keyword_updates.pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "keyword"};
-                       t[1]}.flatten(1).sort{|a,b| a["time"] <=> b["time"]}.last(10)
+                       t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
     status_comments  = user.statuses.pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "status"};
-                       t[1]}.flatten(1).sort{|a,b| a["time"] <=> b["time"]}.last(10)
+                       t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
     ## keyword updates
     keyword_updates = user.keyword_updates.order("created_at desc").limit(10)
