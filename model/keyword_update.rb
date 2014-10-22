@@ -28,6 +28,19 @@ class KeywordUpdate < ActiveRecord::Base
 
   self.per_page = 10
 
+  def self.about_user(fb_id)
+    user = User.find_by_fb_id(fb_id)
+    return where(user: user)
+  end
+
+  def self.map_to_respond keyword_updates
+    keyword_updates.map do |k|
+      {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
+       keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
+       created_at: k.created_at, popularity: k.popularity }
+    end
+  end
+
   def self.insert_comment post_uuid, user, comment
     keyword_update = KeywordUpdate.find_by_uuid(post_uuid)
     if keyword_update != nil

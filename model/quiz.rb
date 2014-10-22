@@ -24,17 +24,6 @@ class Quiz < ActiveRecord::Base
   serialize :comments
   has_many :guesses, inverse_of: :quiz
 
-  
-  # def initialize quiz
-  #   @uuid    = UUIDTools::UUID.random_create.to_s
-  #   @author  = quiz["author"]
-  #   @keyword = quiz["keyword"]
-  #   @option0 = quiz["option0"]
-  #   @option1 = quiz["option1"]
-  #   @time    = Time.now
-  #   # @@quizzes << self
-  # end
-
   after_create {
     self.update_attribute("comments",[])
     self.update_attribute("popularity", (self.created_at.to_f - POPULARITY_BASE) * 2)
@@ -45,6 +34,22 @@ class Quiz < ActiveRecord::Base
   before_save :default_compare_num
   def default_compare_num
     self.compare_num ||= 0
+  end
+
+
+  def self.about_user(fb_id)
+    return where("option0 = ? OR option1 = ? OR author = ?", fb_id, fb_id, fb_id)
+  end
+
+  def self.map_to_respond(quizzes, user)
+    quizzes.map{|q|
+     p = q.attributes
+     p.delete("updated_at")
+     p.delete("keyword_id")
+     p.delete("id")
+     p["answered_before"] = q.answered_before(user)
+     p
+    }
   end
 
   def answered_before user
@@ -106,7 +111,6 @@ class Quiz < ActiveRecord::Base
   # nc: # of comments
   # nf: # of follows
   # POPULARITY_BASE: Tue, 01 Apr 2014 00:00:00 GMT
-  POPULARITY_BASE = 1396310400.0
   
   # after_create {
   #   self.with_lock do

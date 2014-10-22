@@ -222,28 +222,19 @@ class MarbleApp < Sinatra::Application
 
     puts "[DEBUG] -- page: " + params[:page]
 
-    quizzes = Quiz.order('created_at DESC').page(params[:page]).map{|q|
-     p = q.attributes
-     p.delete("updated_at")
-     p.delete("keyword_id")
-     p.delete("id")
-     p["answered_before"] = q.answered_before(user)
-     p
-    }
-
-    statuses = 
-      Status.order('created_at DESC').page(params[:page]).map do |s|
-      {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
-       status: s.status, created_at: s.created_at, popularity: s.popularity}
+    fb_id = params[:fb_id]
+    puts "[DEBUG] -- fb_id: " + fb_id.to_s
+    quizzes = statuses = keyword_updates = nil
+    if fb_id != nil
+      quizzes = Quiz.map_to_respond(Quiz.about_user(fb_id).order('created_at DESC').page(params[:page]), user)      
+      statuses = Status.map_to_respond(Status.about_user(fb_id).order('created_at DESC').page(params[:page]))
+      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_user(fb_id).order('created_at DESC').page(params[:page]))
+    else
+      quizzes = Quiz.map_to_respond(Quiz.order('created_at DESC').page(params[:page]), user)
+      statuses = Status.map_to_respond(Status.order('created_at DESC').page(params[:page]))
+      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.order('created_at DESC').page(params[:page]))
     end
-
-    keyword_updates = 
-      KeywordUpdate.order('created_at DESC').page(params[:page]).map do |k|
-      {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
-       keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
-       created_at: k.created_at, popularity: k.popularity }
-    end
-
+    
     status 200
     {"Quiz" => quizzes, "Status_Update" => statuses, 
      "Keyword_Update" => keyword_updates}.to_json

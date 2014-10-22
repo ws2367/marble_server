@@ -48,18 +48,34 @@ class MarbleAppTest < Minitest::Test
               :option0_name => "name 0",
               :option1 => "220591204",
               :option1_name => "name 1",
-              :answer  => "220591204",
+              :answer  => "name 1",
               :uuid    => uuid
              }
     post '/quizzes', params
     assert last_response.status == 204
 
-    get '/quizzes', auth_params
+    get '/posts', auth_params
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     assert hash.key? "Quiz"
+    assert hash.key? "Status_Update"
+    assert hash.key? "Keyword_Update"
+
     matches = hash["Quiz"].select{|quiz| quiz["uuid"] == uuid}
     assert matches.count == 1 # find one quiz of which uuid matches the uuid sent
+
+    uuid = hash["Keyword_Update"][0]["uuid"]
+    post '/comments', {:auth_token => @@token,
+                       :post_uuid  => uuid,
+                       :comment    => "test keyword comment"}
+
+    get '/posts', {:auth_token => @@token, 
+                   :fb_id      => FB_ID}
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    assert hash.key? "Quiz"
+    assert hash.key? "Status_Update"
+    assert hash.key? "Keyword_Update"
   end
 
   def test_it_get_users_and_options
@@ -83,7 +99,7 @@ class MarbleAppTest < Minitest::Test
   end
 
   def test_it_post_and_get_comment
-    get '/quizzes', auth_params
+    get '/posts', auth_params
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     uuid = hash["Quiz"][0]["uuid"]
@@ -127,20 +143,7 @@ class MarbleAppTest < Minitest::Test
     assert matches.count > 0
   end
 
-  def test_it_get_updates
-    get '/updates', auth_params
-    assert last_response.ok?
-    hash = JSON.parse(last_response.body)
-    assert hash.key? "Status_Update"
-    assert hash.key? "Keyword_Update"
-
-    uuid = hash["Keyword_Update"][0]["uuid"]
-    post '/comments', {:auth_token => @@token,
-                       :post_uuid  => uuid,
-                       :comment    => "test keyword comment"}
-
-    # puts "[TEST] --" + hash.inspect
-  end
+  
 
   def test_it_get_keywords
     get '/keywords', auth_params
@@ -157,7 +160,7 @@ class MarbleAppTest < Minitest::Test
     assert hash.key? "comment"
     assert hash.key? "quiz"
     assert hash.key? "keyword_updates"
-    
+
     puts "[TEST] -- Notification: " + hash.inspect
   end
 

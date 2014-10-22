@@ -38,6 +38,18 @@ class Status < ActiveRecord::Base
     end
   end
 
+  def self.about_user(fb_id)
+    user = User.find_by_fb_id(fb_id)
+    return where(user: user)
+  end
+
+  def self.map_to_respond statuses
+    statuses.map do |s|
+      {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
+       status: s.status, created_at: s.created_at, popularity: s.popularity}
+    end
+  end
+
   scope :popular,
     order("popularity desc, updated_at desc, id desc")
 
