@@ -162,26 +162,26 @@ class MarbleApp < Sinatra::Application
   # ===== updates related request handlers =====
   # 
   
-  get '/updates' do
-    env['warden'].authenticate!(:access_token)
-    user = env['warden'].user
-    puts "[DEBUG] -- page: " + params[:page]
-    statuses = 
-      Status.order('created_at DESC').page(params[:page]).map do |s|
-      {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
-       status: s.status, created_at: s.created_at, popularity: s.popularity}
-    end
+  # get '/updates' do
+  #   env['warden'].authenticate!(:access_token)
+  #   user = env['warden'].user
+  #   puts "[DEBUG] -- page: " + params[:page]
+  #   statuses = 
+  #     Status.order('created_at DESC').page(params[:page]).map do |s|
+  #     {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
+  #      status: s.status, created_at: s.created_at, popularity: s.popularity}
+  #   end
 
-    keyword_updates = 
-      KeywordUpdate.order('created_at DESC').page(params[:page]).map do |k|
-      {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
-       keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
-       created_at: k.created_at, popularity: k.popularity }
-    end
+  #   keyword_updates = 
+  #     KeywordUpdate.order('created_at DESC').page(params[:page]).map do |k|
+  #     {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
+  #      keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
+  #      created_at: k.created_at, popularity: k.popularity }
+  #   end
 
-    status 200
-    {"Status_Update" => statuses, "Keyword_Update" => keyword_updates}.to_json
-  end
+  #   status 200
+  #   {"Status_Update" => statuses, "Keyword_Update" => keyword_updates}.to_json
+  # end
 
 
   #
@@ -216,13 +216,13 @@ class MarbleApp < Sinatra::Application
     quiz.to_json(:only => [:uuid, :popularity, :created_at])
   end
 
-  get '/quizzes' do
+  get '/posts' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
 
     puts "[DEBUG] -- page: " + params[:page]
 
-    resp = Quiz.order('created_at DESC').page(params[:page]).map{|q|
+    quizzes = Quiz.order('created_at DESC').page(params[:page]).map{|q|
      p = q.attributes
      p.delete("updated_at")
      p.delete("keyword_id")
@@ -231,8 +231,22 @@ class MarbleApp < Sinatra::Application
      p
     }
 
+    statuses = 
+      Status.order('created_at DESC').page(params[:page]).map do |s|
+      {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
+       status: s.status, created_at: s.created_at, popularity: s.popularity}
+    end
+
+    keyword_updates = 
+      KeywordUpdate.order('created_at DESC').page(params[:page]).map do |k|
+      {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
+       keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
+       created_at: k.created_at, popularity: k.popularity }
+    end
+
     status 200
-    {"Quiz" => resp}.to_json
+    {"Quiz" => quizzes, "Status_Update" => statuses, 
+     "Keyword_Update" => keyword_updates}.to_json
     # {"Quiz" => Quiz.all}.to_json(:except  => [ :id, :updated_at, :comments],
     #                              :methods => :answered_before(user))
   end
