@@ -97,7 +97,7 @@ class Quiz < ActiveRecord::Base
     answer = (hash[:answer] == hash[:option0_name]) ? option0 : option1
     rank = Rank.find_or_create(keyword, answer)
     rank.increment_score
-    return [option0, option1]
+    return [option0, option1, q]
   end
 
   # popularity = tc + tp + nc*300 + nf*150

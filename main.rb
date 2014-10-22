@@ -195,15 +195,15 @@ class MarbleApp < Sinatra::Application
     
     #TODO: let Quiz model be associated with User as 
     #      in author, option0 and option1
-    opt0, opt1 = Quiz.create_quiz_dependencies({
-                author_name: params[:author_name], 
-                keyword: params[:keyword], 
-                option0: params[:option0], 
-                option0_name: params[:option0_name],
-                option1: params[:option1],  
-                option1_name: params[:option1_name],
-                answer:  params[:answer],
-                uuid:    params[:uuid]}, user)
+    opt0, opt1, quiz = Quiz.create_quiz_dependencies({
+                        author_name: params[:author_name], 
+                        keyword: params[:keyword], 
+                        option0: params[:option0], 
+                        option0_name: params[:option0_name],
+                        option1: params[:option1],  
+                        option1_name: params[:option1_name],
+                        answer:  params[:answer],
+                        uuid:    params[:uuid]}, user)
     
     opt0.increment_badge_number
     opt1.increment_badge_number
@@ -212,7 +212,8 @@ class MarbleApp < Sinatra::Application
     send_push_notification opt0, alert, opt0.badge_number, {post_uuid: params[:uuid]}
     send_push_notification opt1, alert, opt1.badge_number, {post_uuid: params[:uuid]}
 
-    status 204 # No Content
+    status 200
+    quiz.to_json(:only => [:uuid, :popularity, :created_at])
   end
 
   get '/quizzes' do
