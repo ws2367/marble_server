@@ -34,6 +34,7 @@ class Rank < ActiveRecord::Base
     check_if_keyword_updates
   end
 
+  #TODO: ensure there are only three keywords
   def check_if_keyword_updates
     old_keyword = self.user.profile_keywords
     new_keyword = self.user.ranks.order("score desc").limit(NUM_PROFILE_KEYWORD).map{|r| r.keyword}
@@ -43,9 +44,12 @@ class Rank < ActiveRecord::Base
       to_remove = old_keyword - new_keyword
       to_add    = new_keyword - old_keyword
 
-      self.user.keyword_updates.create(added: to_add.map{|k| k.id}, 
-                                       removed: to_remove.map{|k| k.id}, 
-                                       uuid: UUIDTools::UUID.random_create.to_s)
+      keyword_update = self.user.keyword_updates.new(removed: to_remove.map{|k| k.id}, 
+                                                        uuid: UUIDTools::UUID.random_create.to_s)
+      keyword_update.keyword1 = to_add[0].keyword if to_add[0]
+      keyword_update.keyword2 = to_add[1].keyword if to_add[1]
+      keyword_update.keyword3 = to_add[2].keyword if to_add[2]
+      keyword_update.save
       
       self.user.profile_keywords.delete(to_remove)
       self.user.profile_keywords << to_add

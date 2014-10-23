@@ -52,9 +52,14 @@ class MarbleAppTest < Minitest::Test
               :uuid    => uuid
              }
     post '/quizzes', params
-    assert last_response.status == 204
+    assert last_response.ok?
+    hash = JSON.parse(last_response.body)
+    assert hash.key? "uuid"
+    assert hash.key? "popularity"
+    assert hash.key? "created_at"
 
-    get '/posts', auth_params
+    get '/posts', {:auth_token => @@token,
+                   :page  => 1}
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     assert hash.key? "Quiz"
@@ -99,7 +104,8 @@ class MarbleAppTest < Minitest::Test
   end
 
   def test_it_post_and_get_comment
-    get '/posts', auth_params
+    get '/posts', {:auth_token => @@token,
+                   :page  => 1}
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     uuid = hash["Quiz"][0]["uuid"]
@@ -125,7 +131,7 @@ class MarbleAppTest < Minitest::Test
     get '/user', {:auth_token => @@token, :fb_id => FB_ID}
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
-    assert_equal hash["latest_status"]["status"], "status", "Failed to post/get status"
+    assert_equal hash["latest_status"]["status"], "test status", "Failed to post/get status"
 
     post '/comments', {:auth_token => @@token,
                        :post_uuid  => hash['uuid'],
@@ -159,7 +165,7 @@ class MarbleAppTest < Minitest::Test
     hash = JSON.parse(last_response.body)
     assert hash.key? "comment"
     assert hash.key? "quiz"
-    assert hash.key? "keyword_updates"
+    assert hash.key? "keyword_update"
 
     puts "[TEST] -- Notification: " + hash.inspect
   end

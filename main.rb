@@ -220,15 +220,23 @@ class MarbleApp < Sinatra::Application
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
 
-    puts "[DEBUG] -- page: " + params[:page]
+    puts "[DEBUG] -- page: " + params[:page].to_s
 
     fb_id = params[:fb_id]
     puts "[DEBUG] -- fb_id: " + fb_id.to_s
+
+    keyword = params[:keyword]
+    puts "[DEBUG] -- keyword: " + keyword.to_s
+
     quizzes = statuses = keyword_updates = nil
     if fb_id != nil
       quizzes = Quiz.map_to_respond(Quiz.about_user(fb_id).order('created_at DESC').page(params[:page]), user)      
       statuses = Status.map_to_respond(Status.about_user(fb_id).order('created_at DESC').page(params[:page]))
       keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_user(fb_id).order('created_at DESC').page(params[:page]))
+    elsif keyword != nil
+      quizzes = Quiz.map_to_respond(Quiz.about_keyword(keyword).order('created_at DESC').page(params[:page]), user)
+      statuses = []
+      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_keyword(keyword).order('created_at DESC').page(params[:page]))
     else
       quizzes = Quiz.map_to_respond(Quiz.order('created_at DESC').page(params[:page]), user)
       statuses = Status.map_to_respond(Status.order('created_at DESC').page(params[:page]))

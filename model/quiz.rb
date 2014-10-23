@@ -36,6 +36,9 @@ class Quiz < ActiveRecord::Base
     self.compare_num ||= 0
   end
 
+  def self.about_keyword(keyword)
+    return where("keyword = ?", keyword)
+  end
 
   def self.about_user(fb_id)
     return where("option0 = ? OR option1 = ? OR author = ?", fb_id, fb_id, fb_id)
