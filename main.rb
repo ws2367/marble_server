@@ -25,6 +25,7 @@ require 'will_paginate/active_record'
 # models
 # run `annotate --model-dir model` to annotate model files
 POPULARITY_BASE = 1396310400.0
+NUM_KEYWORD_RANKING = 3
 
 require './model/quiz.rb'
 require './model/user.rb'
@@ -363,6 +364,28 @@ class MarbleApp < Sinatra::Application
     Keyword.all.pluck(:keyword).to_json
   end
 
+
+  get '/keyword' do 
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+    keyword = Keyword.find_by_keyword(params[:keyword])
+    unless keyword
+      puts "Cannot find keyword %s in GET /keyword" % params[:keyword]
+      halt 400
+    end
+
+    users = Rank.where(keyword: keyword).order("score desc").
+            limit(NUM_KEYWORD_RANKING).map.with_index{|r, i| [i, {name: r.user.name,
+                                                                  fb_id: r.user.fb_id}]}
+
+    times_played = Rank.where(keyword: keyword).sum(:score)
+
+    creator = keyword.user
+
+    status 200
+    {ranking: users, times: times_played, 
+     creator: creator}.to_json
+  end
   #
   # ===== Guess related request handlers =====
   # 

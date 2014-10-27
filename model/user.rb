@@ -103,7 +103,13 @@ class User < ActiveRecord::Base
   end
 
   def all_profile_keywords
-     self.profile_keywords.pluck(:keyword)
+     profile_keywords = self.profile_keywords
+     res = Array.new
+     for keyword in profile_keywords
+       times_played = Rank.where(keyword: keyword).sum(:score)
+       res << [times_played, keyword.keyword]
+     end
+     return res
   end
 
   def latest_status

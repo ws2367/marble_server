@@ -97,6 +97,20 @@ class MarbleAppTest < Minitest::Test
     assert second_resp["name"] == first_resp[0]["name"]
   end
 
+  def test_it_get_keyword
+    get '/keywords', auth_params
+    assert last_response.ok?
+    keyword = JSON.parse(last_response.body).first
+
+    get '/keyword', {:auth_token => @@token, 
+                     :keyword    => keyword}
+    assert last_response.ok?
+    resp = JSON.parse(last_response.body)
+    assert resp.key? "ranking"
+    assert resp.key? "times"
+    assert resp.key? "creator"
+  end
+
   def test_it_set_device_token
     post '/set_device_token', {:auth_token   => @@token, 
                                :device_token => "asdlkajqweoijdas"}
@@ -149,15 +163,12 @@ class MarbleAppTest < Minitest::Test
     assert matches.count > 0
   end
 
-  
-
   def test_it_get_keywords
     get '/keywords', auth_params
     assert last_response.ok?
     hash = JSON.parse(last_response.body)
     puts "[TEST] --" + hash.inspect
   end
-
 
   def test_it_get_notifications
     get '/notifications', auth_params

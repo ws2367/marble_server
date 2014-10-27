@@ -21,6 +21,8 @@ class Keyword < ActiveRecord::Base
     end
     return res
   end
+
+  
   
 end
   
