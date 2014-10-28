@@ -308,7 +308,9 @@ class MarbleApp < Sinatra::Application
 
     status 200
     user.to_json(:only    => [:name, :fb_id], 
-                 :methods => [:latest_status, :all_profile_keywords])
+                 :methods => [:num_keywords_created, :num_keywords_received, 
+                              :latest_status, 
+                              :all_profile_keywords])
   end
 
   get '/options' do

@@ -102,6 +102,18 @@ class User < ActiveRecord::Base
     end
   end
 
+  def num_keywords_created
+    return self.keywords.count
+  end
+
+  def num_keywords_received
+    return Rank.where(user: self).sum(:score)
+  end
+
+  def num_quizzes_solved
+    return self.guesses.select{|guess| guess.answer == guess.quiz.answer}.count
+  end
+
   def all_profile_keywords
     profile_keywords = self.profile_keywords
     res = Array.new
