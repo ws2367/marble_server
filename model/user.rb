@@ -103,13 +103,36 @@ class User < ActiveRecord::Base
   end
 
   def all_profile_keywords
-     profile_keywords = self.profile_keywords
-     res = Array.new
-     for keyword in profile_keywords
-       times_played = Rank.where(keyword: keyword).sum(:score)
-       res << [times_played, keyword.keyword]
-     end
-     return res
+    profile_keywords = self.profile_keywords
+    res = Array.new
+    for keyword in profile_keywords
+      times_played = self.ranks.where(keyword: keyword).sum(:score)
+
+      self_id = self.id
+      self_index = Rank.where(keyword: keyword).order("score desc").pluck(:user_id).index(self_id)
+      ranking = Hash.new
+      if self_index != nil
+        ranking["self"] = self_index + 1
+
+        lower_index = self_index + 1
+        lower_id = Rank.where(keyword: keyword).order("score desc").pluck(:user_id)[lower_index]
+        if lower_id != nil
+          lower_user = User.find(lower_id)
+          ranking["after"] = {name: lower_user.name, fb_id: lower_user.fb_id, rank: (lower_index + 1)}
+        end
+
+        if self_index > 0
+          higher_index = self_index - 1
+          higher_id = Rank.where(keyword: keyword).order("score desc").pluck(:user_id)[higher_index]
+          if higher_id != nil
+            higher_user = User.find(higher_id)
+            ranking["before"] = {name: higher_user.name, fb_id: higher_user.fb_id, rank: (higher_index + 1)}
+          end
+        end
+      end        
+      res << [times_played, keyword.keyword, ranking]
+    end
+    return res
   end
 
   def latest_status
@@ -120,7 +143,7 @@ class User < ActiveRecord::Base
     end
   end
 
-   #TODO: let token expire
+  #TODO: let token expire
   def ensure_access_token
     if self.access_token == nil
       access_token = SecureRandom.urlsafe_base64 
