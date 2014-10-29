@@ -217,6 +217,11 @@ class MarbleApp < Sinatra::Application
     quiz.to_json(:only => [:uuid, :popularity, :created_at])
   end
 
+  get '/post' do
+    env['warden'].authenticate!(:access_token)
+
+  end
+
   get '/posts' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
@@ -229,15 +234,25 @@ class MarbleApp < Sinatra::Application
     keyword = params[:keyword]
     puts "[DEBUG] -- keyword: " + keyword.to_s
 
+    post_uuid = params[:post_uuid]
+    puts "[DEBUG] -- post_uuid: " + post_uuid.to_s
+
     quizzes = statuses = keyword_updates = nil
     if fb_id != nil
       quizzes = Quiz.map_to_respond(Quiz.about_user(fb_id).order('created_at DESC').page(params[:page]), user)      
       statuses = Status.map_to_respond(Status.about_user(fb_id).order('created_at DESC').page(params[:page]))
       keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_user(fb_id).order('created_at DESC').page(params[:page]))
+    
     elsif keyword != nil
       quizzes = Quiz.map_to_respond(Quiz.about_keyword(keyword).order('created_at DESC').page(params[:page]), user)
       statuses = []
       keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_keyword(keyword).order('created_at DESC').page(params[:page]))
+    
+    elsif post_uuid != nil
+      quizzes  = Quiz.find_by_uuid(post_uuid)
+      statuses = Status.find_by_uuid(post_uuid) if quizzes == nil
+      keyword_updates = KeywordUpdate.find_by_uuid(post_uuid) if statuses == nil
+    
     else
       quizzes = Quiz.map_to_respond(Quiz.order('created_at DESC').page(params[:page]), user)
       statuses = Status.map_to_respond(Status.order('created_at DESC').page(params[:page]))
@@ -266,12 +281,13 @@ class MarbleApp < Sinatra::Application
       end
     end
     
-    receiver = post.user
-    puts "Going to send notificationt for comments on %s" % post.user.name
-    badge_number = receiver ? receiver.badge_number : 1
-    alert = "#{user.name} commented on your post"
-    send_push_notification receiver, alert, badge_number, {post_uuid: params[:post_uuid]}
-
+    if receiver.id != user.id
+      receiver = post.user
+      puts "Going to send notificationt for comments on %s" % post.user.name
+      badge_number = receiver ? receiver.badge_number : 1
+      alert = "#{user.name} commented on your post"
+      send_push_notification receiver, alert, badge_number, {post_uuid: params[:post_uuid]}
+    end
     status 204
   end
 
@@ -309,7 +325,7 @@ class MarbleApp < Sinatra::Application
     status 200
     user.to_json(:only    => [:name, :fb_id], 
                  :methods => [:num_keywords_created, :num_keywords_received, 
-                              :latest_status, 
+                              :num_quizzes_solved, :latest_status, 
                               :all_profile_keywords])
   end
 
