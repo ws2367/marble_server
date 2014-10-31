@@ -102,8 +102,8 @@ class User < ActiveRecord::Base
     end
   end
 
-  def num_keywords_created
-    return self.keywords.count
+  def num_comparison_created
+    return Quiz.where(author: self.fb_id).count
   end
 
   def num_keywords_received
