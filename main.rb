@@ -1,5 +1,6 @@
 require 'sinatra'
 require "sinatra/activerecord"
+require "activerecord-import"
 # require "sinatra/multi_route"
 # require 'sinatra/streaming'
 
@@ -28,6 +29,7 @@ POPULARITY_BASE = 1396310400.0
 NUM_KEYWORD_RANKING = 3
 
 require './model/quiz.rb'
+require './model/friendship.rb'
 require './model/user.rb'
 require './model/guess.rb'
 require './model/status.rb'
@@ -120,6 +122,14 @@ class MarbleApp < Sinatra::Application
       @user = User.create(name: name, fb_id: fb_user_id)
       
       resp['signup'] = 'true'
+      #TODO: move the work to background
+      Thread.new {
+        logger.info "Requesting FB friends"
+        friends = @graph.get_connections("me", "friends?fields=id")
+        logger.info "Finished requesting FB friends"
+        count = @user.process_fb_friends_ids friends
+        logger.info "Number of friendships created for User %s: %s" % [@user.id, count]
+      }
     else
       resp['signup'] = 'false'
     end
@@ -280,9 +290,9 @@ class MarbleApp < Sinatra::Application
         end
       end
     end
-    
+
+    receiver = post.user
     if receiver.id != user.id
-      receiver = post.user
       puts "Going to send notificationt for comments on %s" % post.user.name
       badge_number = receiver ? receiver.badge_number : 1
       alert = "#{user.name} commented on your post"

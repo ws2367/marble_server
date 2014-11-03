@@ -18,6 +18,10 @@ class User < ActiveRecord::Base
   has_many :keywords, inverse_of: :user
   has_many :ranks,    inverse_of: :user
   has_many :keyword_updates, inverse_of: :user
+  
+  has_many :friendships, dependent: :destroy
+  has_many :friends, through: :friendships, :source => 'friends'
+
   has_and_belongs_to_many :profile_keywords, class_name: "Keyword"
   # attr_accessor :name, :fb_id, :access_token, :friends, :fb_friends, :options
   # @@users = []
@@ -163,13 +167,26 @@ class User < ActiveRecord::Base
     end
   end
 
- def reset_access_token
-  access_token = SecureRandom.urlsafe_base64 
-  self.update_attribute("access_token", access_token)
- end
+  def reset_access_token
+    access_token = SecureRandom.urlsafe_base64 
+    self.update_attribute("access_token", access_token)
+  end
 
   def increment_badge_number
     self.update_attribute("badge_number", (self.badge_number.to_i + 1))
+  end
+
+
+  def process_fb_friends_ids friends
+    fb_ids = friends.collect{|frd| frd['id'].to_i}
+
+    friendships = Array.new
+    fb_ids.each do |fb_id|
+      friendships << Friendship.new(friend_fb_id: fb_id, user_id: self.id)
+    end
+
+    # use activerecord-import gem to do batch insert!
+    Friendship.import friendships, :validate => true
   end
 
   # def ensure_fb_friends token
