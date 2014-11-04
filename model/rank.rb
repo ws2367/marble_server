@@ -29,11 +29,18 @@ class Rank < ActiveRecord::Base
     return res
   end
 
+  def self.about_friends_of user
+    Rank.joins(:user).
+         joins('INNER JOIN friendships ON friendships.friend_fb_id = users.fb_id AND
+                                          friendships.user_id = %d' % user.id).distinct
+  end
+
   def increment_score
     self.update_attribute("score", self.score.to_i + 1)
     check_if_keyword_updates
   end
-
+  
+  
   #TODO: ensure there are only three keywords
   def check_if_keyword_updates
     old_keyword = self.user.profile_keywords

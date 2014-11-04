@@ -23,6 +23,7 @@
 class Quiz < ActiveRecord::Base
   serialize :comments
   has_many :guesses, inverse_of: :quiz
+  belongs_to :user, foreign_key: "author", primary_key: :fb_id, inverse_of: :quizzes
 
   after_create {
     self.update_attribute("comments",[])
@@ -38,6 +39,13 @@ class Quiz < ActiveRecord::Base
 
   def self.about_keyword(keyword)
     return where("keyword = ?", keyword)
+  end
+
+  def self.about_friends_of user
+    Quiz.joins('INNER JOIN friendships ON (friendships.friend_fb_id = quizzes.option0 OR 
+                                           friendships.friend_fb_id = quizzes.option1 OR 
+                                           friendships.friend_fb_id = quizzes.author) AND
+                                           friendships.user_id = %d' % user.id).distinct
   end
 
   def self.about_user(fb_id)
@@ -64,9 +72,9 @@ class Quiz < ActiveRecord::Base
     end
   end
 
-  def user
-    return User.find_by_fb_id(self.author)
-  end
+  # def user
+  #   return User.find_by_fb_id(self.author)
+  # end
   
   def self.insert_comment post_uuid, user, comment
     quiz = Quiz.find_by_uuid(post_uuid)

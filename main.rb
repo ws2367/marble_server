@@ -227,11 +227,6 @@ class MarbleApp < Sinatra::Application
     quiz.to_json(:only => [:uuid, :popularity, :created_at])
   end
 
-  get '/post' do
-    env['warden'].authenticate!(:access_token)
-
-  end
-
   get '/posts' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
@@ -254,19 +249,19 @@ class MarbleApp < Sinatra::Application
       keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_user(fb_id).order('created_at DESC').page(params[:page]))
     
     elsif keyword != nil
-      quizzes = Quiz.map_to_respond(Quiz.about_keyword(keyword).order('created_at DESC').page(params[:page]), user)
+      quizzes = Quiz.map_to_respond(Quiz.about_friends_of(user).about_keyword(keyword).order('created_at DESC').page(params[:page]), user)
       statuses = []
-      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_keyword(keyword).order('created_at DESC').page(params[:page]))
+      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_friends_of(user).about_keyword(keyword).order('created_at DESC').page(params[:page]))
     
     elsif post_uuid != nil
-      quizzes  = Quiz.find_by_uuid(post_uuid)
-      statuses = Status.find_by_uuid(post_uuid) if quizzes == nil
-      keyword_updates = KeywordUpdate.find_by_uuid(post_uuid) if statuses == nil
+      quizzes  = Quiz.map_to_respond(Quiz.find_by_uuid(post_uuid))
+      statuses = Status.map_to_respond(Status.find_by_uuid(post_uuid)) if quizzes == nil
+      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.find_by_uuid(post_uuid)) if statuses == nil
     
     else
-      quizzes = Quiz.map_to_respond(Quiz.order('created_at DESC').page(params[:page]), user)
-      statuses = Status.map_to_respond(Status.order('created_at DESC').page(params[:page]))
-      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.order('created_at DESC').page(params[:page]))
+      quizzes = Quiz.map_to_respond(Quiz.about_friends_of(user).order('created_at DESC').page(params[:page]), user)
+      statuses = Status.map_to_respond(Status.about_friends_of(user).order('created_at DESC').page(params[:page]))
+      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_friends_of(user).order('created_at DESC').page(params[:page]))
     end
     
     status 200
@@ -402,7 +397,7 @@ class MarbleApp < Sinatra::Application
       halt 400
     end
 
-    users = Rank.where(keyword: keyword).order("score desc").
+    users = Rank.about_friends_of(user).where(keyword: keyword).order("score desc").
             limit(NUM_KEYWORD_RANKING).map.with_index{|r, i| [i, {name: r.user.name,
                                                                   fb_id: r.user.fb_id}]}
 
