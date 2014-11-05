@@ -15,7 +15,6 @@
 #  author_name  :string(255)
 #  option0_name :string(255)
 #  option1_name :string(255)
-#  compare_num  :integer
 #  keyword_id   :integer
 #  popularity   :float            default(0.0)
 #
@@ -31,11 +30,6 @@ class Quiz < ActiveRecord::Base
   }
 
   self.per_page = 20
-
-  before_save :default_compare_num
-  def default_compare_num
-    self.compare_num ||= 0
-  end
 
   def self.about_keyword(keyword)
     return where("keyword = ?", keyword)
@@ -59,8 +53,18 @@ class Quiz < ActiveRecord::Base
      p.delete("keyword_id")
      p.delete("id")
      p["answered_before"] = q.answered_before(user)
+     p["option0_num"] = q.calculate_option0_num
+     p["option1_num"] = q.calculate_option1_num
      p
     }
+  end
+
+  def calculate_option0_num
+    self.guesses.where(answer: self.option0_name).count
+  end
+
+  def calculate_option1_num 
+    self.guesses.where(answer: self.option1_name).count
   end
 
   def answered_before user
@@ -107,8 +111,7 @@ class Quiz < ActiveRecord::Base
                     option1: hash[:option1],  
                     option1_name: hash[:option1_name],
                     answer:  hash[:answer],
-                    uuid:    hash[:uuid],
-                    compare_num: 0)
+                    uuid:    hash[:uuid])
 
     answer = (hash[:answer] == hash[:option0_name]) ? option0 : option1
     rank = Rank.find_or_create(keyword, answer)
