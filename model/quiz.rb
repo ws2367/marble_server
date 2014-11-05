@@ -76,10 +76,10 @@ class Quiz < ActiveRecord::Base
   #   return User.find_by_fb_id(self.author)
   # end
   
-  def self.insert_comment post_uuid, user, comment
+  def self.insert_comment post_uuid, user, comment, uuid
     quiz = Quiz.find_by_uuid(post_uuid)
     if quiz != nil
-      quiz.comments << {fb_id: user.fb_id, name:user.name, 
+      quiz.comments << {fb_id: user.fb_id, name:user.name, uuid: uuid, 
                         comment: comment, time: Time.now}
       
       subtrahend = (quiz.comments.count > 1 ? quiz.comments.last(2)[0][:time].to_f :

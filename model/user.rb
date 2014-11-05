@@ -188,6 +188,7 @@ class User < ActiveRecord::Base
 
     # use activerecord-import gem to do batch insert!
     Friendship.import friendships, :validate => true
+    return friendships.count
   end
 
   # def ensure_fb_friends token

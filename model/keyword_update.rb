@@ -60,10 +60,10 @@ class KeywordUpdate < ActiveRecord::Base
     return res
   end
 
-  def self.insert_comment post_uuid, user, comment
+  def self.insert_comment post_uuid, user, comment, uuid
     keyword_update = KeywordUpdate.find_by_uuid(post_uuid)
     if keyword_update != nil
-      keyword_update.comments << {fb_id: user.fb_id, name:user.name,
+      keyword_update.comments << {fb_id: user.fb_id, name:user.name, uuid: uuid, 
                                   comment: comment, time: Time.now}
 
       subtrahend = (keyword_update.comments.count > 1 ? keyword_update.comments.last(2)[0][:time].to_f :

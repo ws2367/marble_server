@@ -23,10 +23,10 @@ class Status < ActiveRecord::Base
 
   self.per_page = 10
 
-  def self.insert_comment post_uuid, user, comment
+  def self.insert_comment post_uuid, user, comment, uuid
     status = Status.find_by_uuid(post_uuid)
     if status != nil
-      status.comments << {fb_id: user.fb_id, name:user.name,
+      status.comments << {fb_id: user.fb_id, name:user.name, uuid: uuid, 
                           comment: comment, time: Time.now}
       subtrahend = (status.comments.count > 1 ? status.comments.last(2)[0][:time].to_f :
                                                 status.created_at.to_f)

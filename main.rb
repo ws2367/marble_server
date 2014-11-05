@@ -254,9 +254,9 @@ class MarbleApp < Sinatra::Application
       keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.about_friends_of(user).about_keyword(keyword).order('created_at DESC').page(params[:page]))
     
     elsif post_uuid != nil
-      quizzes  = Quiz.map_to_respond(Quiz.find_by_uuid(post_uuid))
-      statuses = Status.map_to_respond(Status.find_by_uuid(post_uuid)) if quizzes == nil
-      keyword_updates = KeywordUpdate.map_to_respond(KeywordUpdate.find_by_uuid(post_uuid)) if statuses == nil
+      quizzes  = Quiz.map_to_respond(Quiz.where(uuid: post_uuid), user)
+      statuses = Status.map_to_respond Status.where(uuid: post_uuid) if quizzes == nil
+      keyword_updates = KeywordUpdate.map_to_respond KeywordUpdate.where(uuid: post_uuid) if statuses == nil
     
     else
       quizzes = Quiz.map_to_respond(Quiz.about_friends_of(user).order('created_at DESC').page(params[:page]), user)
@@ -277,9 +277,9 @@ class MarbleApp < Sinatra::Application
 
     puts "On Post(%s), %s made the comment: %s" % [params[:post_uuid], user.name, params[:comment]]
     post = nil
-    unless (post = Quiz.insert_comment params[:post_uuid], user, params[:comment])
-      unless (post = Status.insert_comment params[:post_uuid], user, params[:comment])
-        unless (post = KeywordUpdate.insert_comment params[:post_uuid], user, params[:comment])
+    unless (post = Quiz.insert_comment params[:post_uuid], user, params[:comment], params[:uuid])
+      unless (post = Status.insert_comment params[:post_uuid], user, params[:comment], params[:uuid])
+        unless (post = KeywordUpdate.insert_comment params[:post_uuid], user, params[:comment], params[:uuid])
           puts "[ERROR] Cannot find post with uuid %s" % params[:post_uuid].to_s
           halt 400
         end
@@ -437,7 +437,7 @@ class MarbleApp < Sinatra::Application
 
     ## comments
     quizzes_comments = Quiz.where("option1 = ? or option0 = ? or author = ?",
-                       user.fb_id, user.fb_id, user.fb_id).pluck(:uuid, :comments).
+                       user.fb_id, user.fb_id, user.fb_id).distinct.pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "quiz"}; 
                        t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
