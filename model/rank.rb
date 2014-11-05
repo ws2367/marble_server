@@ -31,8 +31,8 @@ class Rank < ActiveRecord::Base
 
   def self.about_friends_of user
     Rank.joins(:user).
-         joins('INNER JOIN friendships ON friendships.friend_fb_id = users.fb_id AND
-                                          friendships.user_id = %d' % user.id).distinct
+         joins('INNER JOIN friendships ON friendships.friend_fb_id = users.fb_id AND '\
+                                         'friendships.user_id = %d' % user.id).distinct
   end
 
   def increment_score

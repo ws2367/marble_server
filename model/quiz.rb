@@ -42,10 +42,10 @@ class Quiz < ActiveRecord::Base
   end
 
   def self.about_friends_of user
-    Quiz.joins('INNER JOIN friendships ON (friendships.friend_fb_id = quizzes.option0 OR 
-                                           friendships.friend_fb_id = quizzes.option1 OR 
-                                           friendships.friend_fb_id = quizzes.author) AND
-                                           friendships.user_id = %d' % user.id).distinct
+    Quiz.joins('INNER JOIN friendships ON (friendships.friend_fb_id = quizzes.option0 OR '\
+                                          'friendships.friend_fb_id = quizzes.option1 OR '\
+                                          'friendships.friend_fb_id = quizzes.author) AND '\
+                                          'friendships.user_id = %d' % user.id).distinct
   end
 
   def self.about_user(fb_id)

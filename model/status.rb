@@ -40,8 +40,8 @@ class Status < ActiveRecord::Base
 
   def self.about_friends_of user
     Status.joins(:user).
-           joins('INNER JOIN friendships ON friendships.friend_fb_id = users.fb_id AND
-                                            friendships.user_id = %d' % user.id).distinct
+           joins('INNER JOIN friendships ON friendships.friend_fb_id = users.fb_id AND '\
+                                           'friendships.user_id = %d' % user.id).distinct
   end
 
   def self.about_user(fb_id)
