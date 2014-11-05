@@ -220,8 +220,12 @@ class MarbleApp < Sinatra::Application
     opt1.increment_badge_number
 
     alert = "#{params[:author_name]} compared you"
-    send_push_notification opt0, alert, opt0.badge_number, {post_uuid: params[:uuid]}
-    send_push_notification opt1, alert, opt1.badge_number, {post_uuid: params[:uuid]}
+    if opt0.fb_id == user.fb_id
+      send_push_notification opt0, alert, opt0.badge_number, {post_uuid: params[:uuid]}
+    end
+    if opt1.fb_id == user.fb_id
+      send_push_notification opt1, alert, opt1.badge_number, {post_uuid: params[:uuid]}
+    end
 
     status 200
     quiz.to_json(:only => [:uuid, :popularity, :created_at])
@@ -276,7 +280,7 @@ class MarbleApp < Sinatra::Application
     user = env['warden'].user
 
     puts "On Post(%s), %s made the comment: %s" % [params[:post_uuid], user.name, params[:comment]]
-    post = nil
+    post = type = nil
     unless (post = Quiz.insert_comment params[:post_uuid], user, params[:comment], params[:uuid])
       unless (post = Status.insert_comment params[:post_uuid], user, params[:comment], params[:uuid])
         unless (post = KeywordUpdate.insert_comment params[:post_uuid], user, params[:comment], params[:uuid])
@@ -286,11 +290,19 @@ class MarbleApp < Sinatra::Application
       end
     end
 
+    if post.class == Quiz
+      type = "comparison"
+    elsif post.class == Status
+      type = "status"
+    elsif post.class == KeywordUpdate
+      type = "keyword"
+    end
+
     receiver = post.user
     if receiver.id != user.id
       puts "Going to send notificationt for comments on %s" % post.user.name
       badge_number = receiver ? receiver.badge_number : 1
-      alert = "#{user.name} commented on your post"
+      alert = "#{user.name} commented on your %s" % type
       send_push_notification receiver, alert, badge_number, {post_uuid: params[:post_uuid]}
     end
     status 204
