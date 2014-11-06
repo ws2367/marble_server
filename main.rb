@@ -451,22 +451,25 @@ class MarbleApp < Sinatra::Application
     quizzes_comments = Quiz.where("option1 = ? or option0 = ? or author = ?",
                        user.fb_id, user.fb_id, user.fb_id).distinct.pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "quiz"}; 
-                       t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
+                       t[1]}.flatten(1).select{|cmt| cmt[:fb_id] != user.fb_id}.
+                       sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
     keyword_comments = user.keyword_updates.pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "keyword"};
-                       t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
+                       t[1]}.flatten(1).select{|cmt| cmt[:fb_id] != user.fb_id}.
+                       sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
     status_comments  = user.statuses.pluck(:uuid, :comments).
                        map{|t| t[1].map{|s| s["post_uuid"] = t[0]; s["type"] = "status"};
-                       t[1]}.flatten(1).sort{|a,b| a[:time] <=> b[:time]}.last(10)
+                       t[1]}.flatten(1).select{|cmt| cmt[:fb_id] != user.fb_id}.
+                       sort{|a,b| a[:time] <=> b[:time]}.last(10)
 
     ## keyword updates
     keyword_updates = user.keyword_updates.order("created_at desc").limit(10)
 
     ## quizzes
-    quizzes = Quiz.where("option1 = ? or option0 = ?", 
-              user.fb_id, user.fb_id).limit(10).map{|q|
+    quizzes = Quiz.where("option1 = ? or option0 = ?", user.fb_id, user.fb_id).
+              where.not(author: user.fb_id).limit(10).map{|q|
                p = q.attributes
                p.delete("updated_at")
                p.delete("keyword_id")
