@@ -170,8 +170,8 @@ class User < ActiveRecord::Base
         end
       end
       has_liked = keyword_being_liked current_user, keyword
-
-      res << [times_played, keyword.keyword, ranking, has_liked]
+      num_likes = keyword.num_likes_for_user self
+      res << [times_played, keyword.keyword, ranking, has_liked, num_likes]
     end
     return res
   end

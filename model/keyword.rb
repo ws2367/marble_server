@@ -23,7 +23,9 @@ class Keyword < ActiveRecord::Base
     return res
   end
 
-  
+  def num_likes_for_user likee
+    return Like.where("likee_id = ? and keyword_id = ?", likee.id, self.id).count
+  end
   
 end
   
