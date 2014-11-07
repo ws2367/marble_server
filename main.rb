@@ -260,8 +260,8 @@ class MarbleApp < Sinatra::Application
     
     elsif post_uuid != nil
       quizzes  = Quiz.map_to_respond(Quiz.where(uuid: post_uuid), user)
-      statuses = Status.map_to_respond Status.where(uuid: post_uuid) if quizzes == nil
-      keyword_updates = KeywordUpdate.map_to_respond KeywordUpdate.where(uuid: post_uuid) if statuses == nil
+      statuses = Status.map_to_respond Status.where(uuid: post_uuid) if quizzes == nil or quizzes.empty?
+      keyword_updates = KeywordUpdate.map_to_respond KeywordUpdate.where(uuid: post_uuid) if statuses == nil or statuses.empty?
     
     else
       quizzes = Quiz.map_to_respond(Quiz.about_friends_of(user).order('created_at DESC').page(params[:page]), user)
