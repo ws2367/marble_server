@@ -12,6 +12,8 @@
 #
 
 class User < ActiveRecord::Base
+  attr_accessor :current_user
+
   serialize :logins
   has_many :statuses, inverse_of: :user
   has_many :guesses,  inverse_of: :user
@@ -24,6 +26,8 @@ class User < ActiveRecord::Base
   has_many :friends, through: :friendships, :source => 'friends'
 
   has_and_belongs_to_many :profile_keywords, class_name: "Keyword"
+  has_many :likes, inverse_of: :user
+
   # attr_accessor :name, :fb_id, :access_token, :friends, :fb_friends, :options
   # @@users = []
 
@@ -47,6 +51,24 @@ class User < ActiveRecord::Base
   #     return nil
   #   end
   # end
+  
+  def like_a_keyword user_fb_id, keyword_string
+    likee = User.find_by_fb_id(user_fb_id)
+    keyword = Keyword.find_by_keyword(keyword_string)
+    self.likes.create(likee_id: likee.id, keyword_id: keyword.id)
+  end
+
+  def unlike_a_keyword user_fb_id, keyword_string
+    likee = User.find_by_fb_id(user_fb_id)
+    keyword = Keyword.find_by_keyword(keyword_string)
+    puts "to destory: %d" % self.likes.where("likee_id = ? and keyword_id = ?", likee.id, keyword.id).count
+    self.likes.where("likee_id = ? and keyword_id = ?", likee.id, keyword.id).destroy_all
+  end
+
+  def keyword_being_liked curr_user, keyword
+    return curr_user.likes.where("likee_id = ? and keyword_id = ?", 
+           self.id, keyword.id).count == 1
+  end
   
   def self.find_or_create fb_id, name
     res = User.find_by_fb_id(fb_id)
@@ -146,8 +168,10 @@ class User < ActiveRecord::Base
             ranking["before"] = {name: higher_user.name, fb_id: higher_user.fb_id, rank: (higher_index + 1)}
           end
         end
-      end        
-      res << [times_played, keyword.keyword, ranking]
+      end
+      has_liked = keyword_being_liked current_user, keyword
+
+      res << [times_played, keyword.keyword, ranking, has_liked]
     end
     return res
   end

@@ -30,6 +30,7 @@ NUM_KEYWORD_RANKING = 3
 
 require './model/quiz.rb'
 require './model/friendship.rb'
+require './model/like.rb'
 require './model/user.rb'
 require './model/guess.rb'
 require './model/status.rb'
@@ -339,6 +340,8 @@ class MarbleApp < Sinatra::Application
       halt 400
     end
 
+    user.current_user = env['warden'].user
+
     status 200
     user.to_json(:only    => [:name, :fb_id], 
                  :methods => [:num_comparison_created, :num_keywords_received, 
@@ -420,6 +423,22 @@ class MarbleApp < Sinatra::Application
     status 200
     {ranking: users, times: times_played, 
      creator: creator}.to_json
+  end
+
+  post '/like' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+
+    user.like_a_keyword params[:likee_fb_id], params[:keyword]
+    status 204
+  end
+
+  post '/unlike' do
+    env['warden'].authenticate!(:access_token)
+    user = env['warden'].user
+    puts "here in unlike"
+    user.unlike_a_keyword params[:likee_fb_id], params[:keyword]
+    status 204
   end
   #
   # ===== Guess related request handlers =====
