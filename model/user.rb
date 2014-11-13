@@ -78,6 +78,11 @@ class User < ActiveRecord::Base
     return res
   end
 
+  def is_friend_of user
+    return user.friendships.where(friend_fb_id: fb_id).count > 0
+    # return env['warden'].user.friendships.where(friend_fb_id: fb_id).count > 0
+  end
+
   def self.update_options
     # add players that are tester's FB friends to tester's friends list
     fb_friend_ids = @fb_friends.map{|elem| elem["id"]}

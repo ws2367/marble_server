@@ -169,33 +169,6 @@ class MarbleApp < Sinatra::Application
     status 204
   end
 
- 
-  #
-  # ===== updates related request handlers =====
-  # 
-  
-  # get '/updates' do
-  #   env['warden'].authenticate!(:access_token)
-  #   user = env['warden'].user
-  #   puts "[DEBUG] -- page: " + params[:page]
-  #   statuses = 
-  #     Status.order('created_at DESC').page(params[:page]).map do |s|
-  #     {name: s.user.name, fb_id: s.user.fb_id, uuid:s.uuid,
-  #      status: s.status, created_at: s.created_at, popularity: s.popularity}
-  #   end
-
-  #   keyword_updates = 
-  #     KeywordUpdate.order('created_at DESC').page(params[:page]).map do |k|
-  #     {name: k.user.name, fb_id: k.user.fb_id, uuid: k.uuid, 
-  #      keywords: k.added.map{|a| Keyword.find_by_id(a).keyword}, 
-  #      created_at: k.created_at, popularity: k.popularity }
-  #   end
-
-  #   status 200
-  #   {"Status_Update" => statuses, "Keyword_Update" => keyword_updates}.to_json
-  # end
-
-
   #
   # ===== Quiz related request handlers =====
   # 
@@ -352,8 +325,19 @@ class MarbleApp < Sinatra::Application
   get '/options' do
     env['warden'].authenticate!(:access_token)
 
+    resp = User.all.to_a.map{ |user|
+      { fb_id: user.fb_id,
+        name:  user.name,
+        first_keyword: user.first_keyword,
+        num_comparison_created: user.num_comparison_created,
+        num_keywords_received: user.num_keywords_received,
+        num_quizzes_solved:    user.num_quizzes_solved,
+        is_friend: user.is_friend_of(env['warden'].user)
+      }
+    }
+
     status 200
-    User.all.to_json(:only => [:fb_id, :name], :methods => :first_keyword)
+    resp.to_json
   end
 
   # POST users/set_device_token
@@ -436,7 +420,7 @@ class MarbleApp < Sinatra::Application
   post '/unlike' do
     env['warden'].authenticate!(:access_token)
     user = env['warden'].user
-    puts "here in unlike"
+
     user.unlike_a_keyword params[:likee_fb_id], params[:keyword]
     status 204
   end
@@ -509,11 +493,4 @@ class MarbleApp < Sinatra::Application
     status 200
     resp.to_json
   end
-
-  # post '/*' do
-  #   path = params[:splat]
-  #   puts path.inspect
-  #   puts params.inspect
-  # end
-
 end
