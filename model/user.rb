@@ -153,13 +153,13 @@ class User < ActiveRecord::Base
       times_played = self.ranks.where(keyword: keyword).sum(:score)
 
       self_id = self.id
-      self_index = Rank.about_friends_of(self).where(keyword: keyword).order("score desc").pluck(:user_id).index(self_id)
+      self_index = Rank.about_friends_of(current_user).where(keyword: keyword).order("score desc").pluck(:user_id).index(self_id)
       ranking = Hash.new
       if self_index != nil
         ranking["self"] = self_index + 1
 
         lower_index = self_index + 1
-        lower_id = Rank.about_friends_of(self).where(keyword: keyword).order("score desc").pluck(:user_id)[lower_index]
+        lower_id = Rank.about_friends_of(current_user).where(keyword: keyword).order("score desc").pluck(:user_id)[lower_index]
         if lower_id != nil
           lower_user = User.find(lower_id)
           ranking["after"] = {name: lower_user.name, fb_id: lower_user.fb_id, rank: (lower_index + 1)}
@@ -167,7 +167,7 @@ class User < ActiveRecord::Base
 
         if self_index > 0
           higher_index = self_index - 1
-          higher_id = Rank.about_friends_of(self).where(keyword: keyword).order("score desc").pluck(:user_id)[higher_index]
+          higher_id = Rank.about_friends_of(current_user).where(keyword: keyword).order("score desc").pluck(:user_id)[higher_index]
           if higher_id != nil
             higher_user = User.find(higher_id)
             ranking["before"] = {name: higher_user.name, fb_id: higher_user.fb_id, rank: (higher_index + 1)}
