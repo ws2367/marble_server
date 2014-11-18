@@ -41,13 +41,13 @@ class Rank < ActiveRecord::Base
   end
   
   
-  #TODO: ensure there are only three keywords
   def check_if_keyword_updates
     old_keyword = self.user.profile_keywords
     new_keyword = self.user.ranks.order("score desc").limit(NUM_PROFILE_KEYWORD).map{|r| r.keyword}
 
     # if keyword update needs to be issued
-    if old_keyword != new_keyword 
+    unless (old_keyword - new_keyword).empty? and (new_keyword - old_keyword).empty?
+
       to_remove = old_keyword - new_keyword
       to_add    = new_keyword - old_keyword
 
