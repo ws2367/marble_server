@@ -380,12 +380,20 @@ class MarbleApp < Sinatra::Application
   #
   # ===== Keyword related request handlers =====
   # 
-
+  #TODO: this needs to be modified so it provides a default keywords lists (pure strings)
   get '/keywords' do
     env['warden'].authenticate!(:access_token)
+    
+    #TODO: make this not read files every time but stored in memory
+    keywords = Keyword.all.pluck(:keyword)
+    File.open("config/default_keywords", "r") do |infile|
+      while (line = infile.gets)
+        keywords << line.strip
+      end
+    end
 
     status 200
-    Keyword.all.pluck(:keyword).to_json
+    keywords.uniq!.to_json
   end
 
 
