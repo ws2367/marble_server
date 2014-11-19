@@ -37,7 +37,16 @@ class Rank < ActiveRecord::Base
 
   def increment_score
     self.update_attribute("score", self.score.to_i + 1)
-    check_if_keyword_updates
+    timers = Timers::Group.new
+    timers.after(TIME_TO_CHECK_KEYWORD_UPDATES) { # 10 mins later
+      puts "[DEBUG] 10-min timer fired and will check keyword updates"
+      check_if_keyword_updates
+    }
+
+    Thread.new{
+      puts "[DEBUG] scheduled a 10-min timer to check keyword updates"
+      timers.wait
+    }
   end
   
   

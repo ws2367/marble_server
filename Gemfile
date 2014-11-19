@@ -12,4 +12,5 @@ gem "activerecord-import", ">= 0.2.0"
 gem "rake"
 gem 'annotate', '~> 2.6.5'
 gem 'houston'
+gem 'timers'
 gem 'will_paginate', '~> 3.0'
