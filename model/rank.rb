@@ -40,7 +40,9 @@ class Rank < ActiveRecord::Base
     timers = Timers::Group.new
     timers.after(TIME_TO_CHECK_KEYWORD_UPDATES) { # 10 mins later
       puts "[DEBUG] 10-min timer fired and will check keyword updates"
-      check_if_keyword_updates
+      ActiveRecord::Base.connection_pool.with_connection do
+        check_if_keyword_updates
+      end
     }
 
     Thread.new{

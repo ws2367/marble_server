@@ -28,7 +28,7 @@ require 'will_paginate/active_record'
 # run `annotate --model-dir model` to annotate model files
 POPULARITY_BASE = 1396310400.0
 NUM_KEYWORD_RANKING = 3
-TIME_TO_CHECK_KEYWORD_UPDATES = 10 * 60 # 10 mins before checking keyword updates
+TIME_TO_CHECK_KEYWORD_UPDATES = 2 * 60 # 10 mins before checking keyword updates
 
 require './model/quiz.rb'
 require './model/friendship.rb'
