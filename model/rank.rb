@@ -60,16 +60,23 @@ class Rank < ActiveRecord::Base
       to_remove = old_keyword - new_keyword
       to_add    = new_keyword - old_keyword
 
-      keyword_update = self.user.keyword_updates.new(removed: to_remove.map{|k| k.id}, 
-                                                        uuid: UUIDTools::UUID.random_create.to_s)
-      keyword_update.keyword1 = to_add[0].keyword if to_add[0]
-      keyword_update.keyword2 = to_add[1].keyword if to_add[1]
-      keyword_update.keyword3 = to_add[2].keyword if to_add[2]
-      keyword_update.save
-      
-      self.user.profile_keywords.delete(to_remove)
-      self.user.profile_keywords << to_add
-      self.user.save
+      while to_add.count > 0
+        three_keywords = to_add.slice!(0, 3)
+        keyword_update = self.user.keyword_updates.new(removed: to_remove.map{|k| k.id}, 
+                                                          uuid: UUIDTools::UUID.random_create.to_s)
+
+        keyword_update.keyword1 = three_keywords[0].keyword if three_keywords[0]
+        keyword_update.keyword2 = three_keywords[1].keyword if three_keywords[1]
+        keyword_update.keyword3 = three_keywords[2].keyword if three_keywords[2]
+        keyword_update.save
+        
+        unless to_remove.empty?
+          self.user.profile_keywords.delete(to_remove) 
+          to_remove = []
+        end
+        self.user.profile_keywords << three_keywords
+        self.user.save
+      end
     end
 
   end
