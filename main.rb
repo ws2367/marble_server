@@ -393,7 +393,7 @@ class MarbleApp < Sinatra::Application
     end
 
     status 200
-    keywords.uniq!.to_json
+    keywords.uniq.to_json
   end
 
 
