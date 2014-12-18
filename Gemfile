@@ -5,7 +5,6 @@ gem "sinatra-activerecord"
 gem "sqlite3"
 gem 'json'
 gem 'thin'
-gem 'json'
 gem 'uuidtools'
 gem 'koala'
 gem "activerecord-import", ">= 0.2.0"
