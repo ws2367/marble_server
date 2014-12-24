@@ -1,5 +1,16 @@
-.DS_Store
 *.sqlite3
-schema.rb
+
+# Ignore credentials 
+config/*.pem
 *.pem
 config/app_credentials
+config/ssl/*
+
+
+# Ignore all logfiles and tempfiles.
+log/
+doc/
+*.swp
+*~
+.project
+.DS_Store
