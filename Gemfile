@@ -1,5 +1,6 @@
 source 'https://rubygems.org'
 
+gem 'unicorn'
 gem 'warden'
 gem "sinatra-activerecord"
 gem "sqlite3"
