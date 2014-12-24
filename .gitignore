@@ -5,7 +5,7 @@ config/*.pem
 *.pem
 config/app_credentials
 config/ssl/*
-
+upload_credentials.sh
 
 # Ignore all logfiles and tempfiles.
 log/
