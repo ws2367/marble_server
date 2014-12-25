@@ -43,6 +43,7 @@ GEM
     minitest (5.4.2)
     multi_json (1.10.1)
     multipart-post (2.0.0)
+    mysql2 (0.3.15)
     rack (1.5.2)
     rack-protection (1.5.3)
       rack
@@ -84,6 +85,7 @@ DEPENDENCIES
   houston
   json
   koala
+  mysql2
   rake
   sinatra-activerecord
   sqlite3

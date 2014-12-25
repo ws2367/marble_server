@@ -1,12 +1,12 @@
 #!/bin/sh
 read -p "Enter the server ip address: " ip
 echo "OK, starting now..."
-cd /Users/wen-hsiangshaw/dev/marbles_server/config
+cd /Users/wen-hsiangshaw/dev/marble_server/config
 sftp root@$ip <<EOF
-cd /home/yours/staging/shared/config
+cd /home/marbles_en/config
 put app_credentials
-put apn_development_marble.pem
-put apn_production_marble_zh.pem
+put apn_production_marbles_en.pem
+mkdir ssl
 cd ssl
 put ssl/server.crt
 put ssl/server.key

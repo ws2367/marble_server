@@ -17,12 +17,10 @@ require 'securerandom'
 require 'will_paginate'
 require 'will_paginate/active_record'
 
-# database
-# if ENV['RACK_ENV'] = 'test'
-  # set :database, "sqlite3:./test/db/test.sqlite3"
-# else
-  set :database, "sqlite3:./db/marble.sqlite3"
-# end
+# :development, :test, :production
+set :environment, :development
+set :lang, :EN # :EN, :ZH
+set :database_file, "config/database.yml"
 
 # models
 # run `annotate --model-dir model` to annotate model files
@@ -54,8 +52,17 @@ class MarbleApp < Sinatra::Application
   end
 
   configure do 
-    @@apn = Houston::Client.development
-    @@apn.certificate = File.read("config/apn_development_marble.pem")
+    if ENV['RACK_ENV'] = 'production'
+      @@apn = Houston::Client.production
+      if settings.lang == :EN
+        @@apn.certificate = File.read("config/apn_production_marbles_en.pem")
+      else
+        @@apn.certificate = File.read("config/apn_production_marbles_zh.pem")
+      end
+    else
+      @@apn = Houston::Client.development
+      @@apn.certificate = File.read("config/apn_development_marble.pem")
+    end
   end
   
   def send_push_notification user, alert, badge, custom_data

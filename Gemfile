@@ -4,6 +4,7 @@ gem 'unicorn'
 gem 'warden'
 gem "sinatra-activerecord"
 gem "sqlite3"
+gem "mysql2"
 gem 'json'
 gem 'thin'
 gem 'uuidtools'
